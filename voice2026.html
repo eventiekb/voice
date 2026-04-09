@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0D0A1A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Голос">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><radialGradient id='g' cx='40%25' cy='35%25'><stop offset='0%25' stop-color='%23A78BFA'/><stop offset='100%25' stop-color='%234C1D95'/></radialGradient></defs><rect width='100' height='100' rx='22' fill='%230D0A1A'/><circle cx='50' cy='50' r='38' fill='url(%23g)' opacity='.15'/><rect x='42' y='20' width='16' height='28' rx='8' fill='%23A78BFA'/><path d='M26 46a24 24 0 0048 0' stroke='%23A78BFA' stroke-width='4' fill='none' stroke-linecap='round'/><line x1='50' y1='70' x2='50' y2='80' stroke='%23A78BFA' stroke-width='4' stroke-linecap='round'/><line x1='38' y1='80' x2='62' y2='80' stroke='%23A78BFA' stroke-width='4' stroke-linecap='round'/></svg>">
+<title>Голос 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+:root{
+  --bg:#0D0A1A;
+  --bg2:rgba(255,255,255,0.04);
+  --bg3:rgba(255,255,255,0.07);
+  --glow:rgba(139,92,246,0.35);
+  --p:#8B5CF6;--p2:#A78BFA;--p3:#6D28D9;
+  --pink:#EC4899;
+  --text:#F0EBF8;--text2:#9B8AB8;--text3:#5B4A80;
+  --border:rgba(139,92,246,0.2);
+  --border2:rgba(139,92,246,0.4);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overscroll-behavior:none;background:var(--bg);}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  color:var(--text);min-height:100vh;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(109,40,217,0.3) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(236,72,153,0.1) 0%, transparent 50%),
+    var(--bg);
+}
+#app{max-width:430px;margin:0 auto;padding:env(safe-area-inset-top,20px) 1.25rem 3rem;min-height:100vh;}
+
+/* HEADER */
+.hdr{text-align:center;padding:1rem 0 0.75rem;}
+.hdr h1{
+  font-size:24px;font-weight:600;letter-spacing:-0.03em;
+  background:linear-gradient(135deg,#C4B5FD,#8B5CF6,#EC4899);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hdr p{font-size:12px;color:var(--text3);margin-top:3px;letter-spacing:0.02em;}
+
+/* MODE GRID */
+.grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:8px;margin:1rem 0;
+}
+.mb{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:12px 4px 10px;border-radius:20px;cursor:pointer;
+  border:1px solid var(--border);
+  background:var(--bg2);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  transition:all 0.2s;gap:4px;
+  min-height:76px;
+}
+.mb:active{transform:scale(0.92);}
+.mb .i{font-size:20px;line-height:1;}
+.mb .n{font-size:10px;font-weight:500;color:var(--text2);letter-spacing:0.01em;}
+.mb .s{font-size:9px;color:var(--text3);line-height:1.3;text-align:center;}
+.mb.on{
+  background:linear-gradient(145deg,rgba(139,92,246,0.3),rgba(109,40,217,0.4));
+  border-color:var(--p2);
+  box-shadow:0 0 20px var(--glow),inset 0 1px 0 rgba(167,139,250,0.3);
+}
+.mb.on .n{color:var(--p2);}
+.mb.on .s{color:rgba(167,139,250,0.6);}
+
+/* STATUS */
+#status{
+  text-align:center;font-size:13px;color:var(--text2);
+  min-height:18px;margin:0.5rem 0;letter-spacing:0.01em;
+}
+
+/* MIC BUTTON */
+.mic-area{
+  display:flex;flex-direction:column;align-items:center;
+  margin:0.5rem 0 1rem;
+}
+.mic-ring{
+  width:110px;height:110px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;cursor:pointer;
+  background:radial-gradient(circle,rgba(139,92,246,0.15) 0%,transparent 70%);
+  border:1px solid var(--border);
+  transition:all 0.3s;
+}
+.mic-ring::before{
+  content:'';position:absolute;inset:-8px;border-radius:50%;
+  border:1px solid rgba(139,92,246,0.12);
+}
+.mic-ring::after{
+  content:'';position:absolute;inset:-16px;border-radius:50%;
+  border:1px solid rgba(139,92,246,0.06);
+}
+.mic-ring.idle{animation:float 4s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.mic-ring.rec{
+  background:radial-gradient(circle,rgba(236,72,153,0.2) 0%,transparent 70%);
+  border-color:rgba(236,72,153,0.4);
+  box-shadow:0 0 40px rgba(236,72,153,0.3);
+  animation:none;
+}
+#mic-btn{
+  width:68px;height:68px;border-radius:50%;border:none;cursor:pointer;
+  background:linear-gradient(145deg,var(--p),var(--p3));
+  box-shadow:0 4px 24px rgba(109,40,217,0.6),inset 0 1px 0 rgba(196,181,253,0.3);
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;position:relative;z-index:2;
+}
+#mic-btn:active{transform:scale(0.93);}
+#mic-btn.rec{
+  background:linear-gradient(145deg,#EC4899,#9D174D);
+  box-shadow:0 4px 24px rgba(236,72,153,0.6),inset 0 1px 0 rgba(249,168,212,0.3);
+}
+
+/* WAVE STOP */
+#wave-wrap{
+  display:none;margin:0.5rem 0 0.75rem;cursor:pointer;
+  border-radius:18px;overflow:hidden;position:relative;
+  border:1px solid var(--border2);
+  background:rgba(139,92,246,0.06);
+  backdrop-filter:blur(8px);
+}
+#wave-wrap.on{display:block;}
+#wc{display:block;width:100%;height:64px;}
+#wlbl{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  font-size:11px;font-weight:600;letter-spacing:0.1em;
+  color:var(--p2);text-transform:uppercase;
+  background:rgba(13,10,26,0.7);padding:4px 10px;border-radius:8px;
+  backdrop-filter:blur(4px);
+}
+
+/* CARDS */
+.card{
+  border-radius:18px;padding:14px 16px;margin-bottom:8px;
+  border:1px solid var(--border);
+  background:var(--bg2);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+.lbl{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:7px;font-weight:500;}
+.txt{font-size:14px;line-height:1.8;min-height:44px;white-space:pre-wrap;color:var(--text);}
+.txt.ph{color:var(--text3);font-style:italic;font-weight:300;}
+
+/* PROC */
+.proc{display:none;align-items:center;gap:6px;margin:2px 0 8px 4px;}
+.dot{width:4px;height:4px;border-radius:50%;background:var(--p2);animation:blink 1.2s ease-in-out infinite;}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.1}40%{opacity:1}}
+.plbl{font-size:12px;color:var(--p2);font-weight:300;}
+
+/* ACTIONS */
+.acts{display:flex;gap:10px;margin-top:8px;}
+.btn{
+  flex:1;padding:13px;border-radius:14px;font-size:13px;font-weight:500;
+  cursor:pointer;transition:all 0.18s;font-family:inherit;
+  border:1px solid var(--border);
+  background:var(--bg3);color:var(--text2);
+  letter-spacing:0.01em;
+}
+.btn:active{transform:scale(0.96);}
+.btn.copy{
+  order:2;
+  background:linear-gradient(135deg,rgba(139,92,246,0.4),rgba(109,40,217,0.6));
+  border-color:var(--p2);color:var(--p2);
+  box-shadow:0 2px 16px rgba(109,40,217,0.3);
+}
+.btn.clear{order:1;}
+.btn:disabled{opacity:.25;cursor:default;transform:none;}
+
+#err{font-size:12px;color:#F472B6;text-align:center;margin-top:8px;min-height:14px;font-weight:300;}
+
+/* API */
+.api{
+  margin-top:1rem;padding:14px 16px;border-radius:18px;
+  border:1px solid var(--border);background:var(--bg2);
+}
+.albl{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;font-weight:500;}
+.arow{display:flex;gap:8px;}
+#ain{
+  flex:1;padding:10px 12px;border-radius:12px;font-size:13px;
+  background:rgba(0,0,0,0.3);border:1px solid var(--border);color:var(--text);
+  font-family:inherit;
+}
+#ain:focus{outline:none;border-color:var(--p);}
+#abtn{
+  padding:10px 16px;border-radius:12px;font-size:13px;font-weight:500;
+  background:linear-gradient(135deg,var(--p),var(--p3));
+  border:none;color:#fff;cursor:pointer;font-family:inherit;
+  box-shadow:0 2px 12px rgba(109,40,217,0.4);
+}
+.anote{font-size:11px;color:var(--text3);margin-top:8px;line-height:1.6;font-weight:300;}
+.anote a{color:var(--p2);}
+
+.install{
+  margin-top:1rem;padding:12px 16px;border-radius:16px;
+  border:1px dashed var(--border2);
+  font-size:11px;color:var(--text3);line-height:1.7;text-align:center;font-weight:300;
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="hdr">
+    <h1>VOICE 2026</h1>
+    <p>выбери режим · нажми · говори · нажми на волну</p>
+  </div>
+
+  <div class="grid">
+    <div class="mb" data-mode="story"><span class="i">📖</span><span class="n">Рассказ</span><span class="s">абзацы</span></div>
+    <div class="mb" data-mode="friend"><span class="i">💬</span><span class="n">Другу</span><span class="s">+ эмодзи</span></div>
+    <div class="mb" data-mode="prompt"><span class="i">🧠</span><span class="n">Промпт</span><span class="s">для ИИ</span></div>
+    <div class="mb" data-mode="business"><span class="i">✉️</span><span class="n">Деловое</span><span class="s">письмо</span></div>
+    <div class="mb" data-mode="tasks"><span class="i">📋</span><span class="n">Задачи</span><span class="s">список</span></div>
+    <div class="mb" data-mode="post"><span class="i">🔥</span><span class="n">Пост</span><span class="s">соцсети</span></div>
+    <div class="mb" data-mode="diary"><span class="i">🧘</span><span class="n">Дневник</span><span class="s">личное</span></div>
+    <div class="mb" data-mode="translate"><span class="i">🌍</span><span class="n">Перевод</span><span class="s">→ EN</span></div>
+  </div>
+
+  <div id="status">выбери режим и нажми на него</div>
+
+  <div class="mic-area">
+    <div class="mic-ring idle" id="mic-ring">
+      <button id="mic-btn" aria-label="Микрофон">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect x="10" y="2" width="8" height="14" rx="4" fill="white"/>
+          <path d="M5 13a9 9 0 0018 0" stroke="white" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <line x1="14" y1="22" x2="14" y2="26" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <line x1="9" y1="26" x2="19" y2="26" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="wave-wrap">
+    <canvas id="wc"></canvas>
+    <div id="wlbl">⏹ стоп</div>
+  </div>
+
+  <div class="card">
+    <div class="lbl">услышал</div>
+    <div class="txt ph" id="raw">здесь появится твоя речь…</div>
+  </div>
+
+  <div class="proc" id="proc">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <span class="plbl" id="plbl">обрабатываю…</span>
+  </div>
+
+  <div class="card">
+    <div class="lbl">результат</div>
+    <div class="txt ph" id="result">здесь появится обработанный текст…</div>
+  </div>
+
+  <div class="acts">
+    <button class="btn clear" id="cbtn" disabled>Очистить</button>
+    <button class="btn copy" id="cpbtn" disabled>Скопировать</button>
+  </div>
+  <div id="err"></div>
+
+  <div class="api">
+    <div class="albl">Groq API ключ</div>
+    <div class="arow">
+      <input type="password" id="ain" placeholder="gsk_..." autocomplete="off" spellcheck="false">
+      <button id="abtn">Сохранить</button>
+    </div>
+    <div class="anote">Хранится только на устройстве · <a href="https://console.groq.com" target="_blank">console.groq.com</a></div>
+  </div>
+
+  <div class="install">
+    📲 Установить: iOS Safari → Поделиться → «На экран Домой»<br>
+    Android Chrome → ⋮ → «Добавить на главный экран»
+  </div>
+</div>
+
+<script>
+const GROQ_KEY_DEFAULT = '';
+
+const MODES={
+  story:{p:'Структурирую рассказ…',f:t=>`Ты редактор. Обработай диктованный текст: расставь знаки препинания, исправь ошибки распознавания, раздели на абзацы, если 3+ темы — добавь оглавление, сохрани стиль автора. Верни только текст.\n\nТекст: ${t}`},
+  friend:{p:'Добавляю эмодзи…',f:t=>`Помоги написать сообщение другу: расставь знаки препинания, сохрани неформальный живой стиль, добавь 3–7 уместных эмодзи. Верни только сообщение.\n\nТекст: ${t}`},
+  prompt:{p:'Строю промпт…',f:t=>`Ты эксперт по промптам. Пойми суть надиктованной мысли и напиши детальный промпт для ИИ с контекстом, форматом и ограничениями. Верни только промпт на русском.\n\nМысль: ${t}`},
+  business:{p:'Оформляю письмо…',f:t=>`Преобразуй в деловое письмо: официальный вежливый тон, структура (обращение, суть, заключение), знаки препинания. Верни только письмо.\n\nТекст: ${t}`},
+  tasks:{p:'Извлекаю задачи…',f:t=>`Извлеки из текста список задач. Каждая с ☐ с новой строки. Укажи сроки если есть. Сгруппируй по темам. Верни только список.\n\nТекст: ${t}`},
+  post:{p:'Создаю пост…',f:t=>`Сделай цепляющий пост для Telegram/Instagram: яркое начало, живой стиль, эмодзи, 3–5 хэштегов. Верни только пост.\n\nТекст: ${t}`},
+  diary:{p:'Оформляю запись…',f:t=>`Оформи как дневниковую запись: мягкий личный стиль от первого лица, знаки препинания, абзацы по настроению. Верни только запись.\n\nТекст: ${t}`},
+  translate:{p:'Перевожу…',f:t=>`Переведи с русского на английский, естественный разговорный стиль. Верни только перевод.\n\nТекст: ${t}`}
+};
+
+const $=id=>document.getElementById(id);
+const statusEl=$('status'),rawEl=$('raw'),resultEl=$('result');
+const procEl=$('proc'),plblEl=$('plbl'),errEl=$('err');
+const cbtn=$('cbtn'),cpbtn=$('cpbtn');
+const waveWrap=$('wave-wrap'),wc=$('wc'),micRing=$('mic-ring'),micBtn=$('mic-btn');
+const ctx=wc.getContext('2d');
+const ainEl=$('ain'),abtnEl=$('abtn');
+
+let apiKey=localStorage.getItem('vd_groq')||GROQ_KEY_DEFAULT;
+if(apiKey)ainEl.value=apiKey;
+abtnEl.addEventListener('click',()=>{
+  const k=ainEl.value.trim();
+  if(k.startsWith('gsk_')||k.startsWith('sk-')){
+    localStorage.setItem('vd_groq',k);apiKey=k;
+    abtnEl.textContent='✓ Сохранён';setTimeout(()=>abtnEl.textContent='Сохранить',2000);
+  } else errEl.textContent='Ключ должен начинаться с gsk_...';
+});
+
+let curMode=null,isRec=false,recog=null,finalTx='';
+let stream=null,aCtx=null,analyser=null,frame=null;
+
+function resC(){
+  const dpr=window.devicePixelRatio||1;
+  wc.width=wc.offsetWidth*dpr;wc.height=wc.offsetHeight*dpr;
+  ctx.scale(dpr,dpr);
+}
+function drawW(){
+  const W=wc.offsetWidth,H=wc.offsetHeight;
+  ctx.clearRect(0,0,W,H);
+  if(!analyser){
+    const t=Date.now()*0.003;
+    ctx.beginPath();
+    const g=ctx.createLinearGradient(0,0,W,0);
+    g.addColorStop(0,'rgba(139,92,246,0.6)');
+    g.addColorStop(0.5,'rgba(167,139,250,0.9)');
+    g.addColorStop(1,'rgba(236,72,153,0.6)');
+    ctx.strokeStyle=g;ctx.lineWidth=2;
+    ctx.moveTo(0,H/2);
+    for(let x=0;x<W;x++)ctx.lineTo(x,H/2+Math.sin(x*0.04+t)*12+Math.sin(x*0.1+t*1.5)*6);
+    ctx.stroke();
+  } else {
+    const d=new Uint8Array(analyser.fftSize);
+    analyser.getByteTimeDomainData(d);
+    const g=ctx.createLinearGradient(0,0,W,0);
+    g.addColorStop(0,'rgba(139,92,246,0.8)');
+    g.addColorStop(0.5,'rgba(167,139,250,1)');
+    g.addColorStop(1,'rgba(236,72,153,0.8)');
+    ctx.beginPath();ctx.strokeStyle=g;ctx.lineWidth=2.5;
+    const sw=W/d.length;let x=0;
+    for(let i=0;i<d.length;i++){
+      const y=H/2+(d[i]/128-1)*(H*0.46);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);x+=sw;
+    }
+    ctx.stroke();
+  }
+  frame=requestAnimationFrame(drawW);
+}
+function startWave(ms){
+  try{
+    aCtx=new(window.AudioContext||window.webkitAudioContext)();
+    analyser=aCtx.createAnalyser();analyser.fftSize=512;
+    aCtx.createMediaStreamSource(ms).connect(analyser);
+  }catch(e){analyser=null;}
+  resC();drawW();
+}
+function stopWave(){
+  if(frame)cancelAnimationFrame(frame);frame=null;
+  if(aCtx){try{aCtx.close();}catch(e){}aCtx=null;}analyser=null;
+}
+
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+
+// Click on mode button = start recording
+document.querySelectorAll('.mb').forEach(b=>{
+  b.addEventListener('click',async()=>{
+    if(isRec){stopRec();return;}
+    document.querySelectorAll('.mb').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');curMode=b.dataset.mode;errEl.textContent='';
+    if(!SR){errEl.textContent='Используй Chrome или Safari.';return;}
+    try{stream=await navigator.mediaDevices.getUserMedia({audio:true});}
+    catch(e){errEl.textContent='Нет доступа к микрофону — разреши в браузере.';return;}
+    startRec();
+  });
+});
+
+// Mic button also works
+micBtn.addEventListener('click',async()=>{
+  if(isRec){stopRec();return;}
+  if(!curMode){errEl.textContent='Сначала выбери режим выше.';return;}
+  try{stream=await navigator.mediaDevices.getUserMedia({audio:true});}
+  catch(e){errEl.textContent='Нет доступа к микрофону.';return;}
+  startRec();
+});
+
+waveWrap.addEventListener('click',()=>{if(isRec)stopRec();});
+
+function startRec(){
+  finalTx='';rawEl.textContent='';rawEl.className='txt';
+  resultEl.className='txt ph';resultEl.textContent='здесь появится обработанный текст…';
+  cpbtn.disabled=true;cbtn.disabled=true;isRec=true;
+  statusEl.textContent='слушаю… говори!';
+  micRing.classList.remove('idle');micRing.classList.add('rec');
+  micBtn.classList.add('rec');
+  waveWrap.classList.add('on');startWave(stream);
+  recog=new SR();recog.lang='ru-RU';recog.interimResults=true;recog.continuous=true;
+  recog.onresult=e=>{
+    let iv='';finalTx='';
+    for(let i=0;i<e.results.length;i++){
+      if(e.results[i].isFinal)finalTx+=e.results[i][0].transcript+' ';
+      else iv+=e.results[i][0].transcript;
+    }
+    rawEl.textContent=finalTx+iv;
+  };
+  recog.onerror=e=>{if(e.error!=='aborted')errEl.textContent='Ошибка: '+e.error;stopRec();};
+  recog.onend=()=>{if(isRec)stopRec();};
+  try{recog.start();}catch(e){errEl.textContent='Не удалось запустить.';stopRec();}
+}
+
+function stopRec(){
+  isRec=false;
+  micRing.classList.remove('rec');micRing.classList.add('idle');
+  micBtn.classList.remove('rec');
+  waveWrap.classList.remove('on');stopWave();
+  document.querySelectorAll('.mb').forEach(x=>x.classList.remove('on'));
+  if(recog){try{recog.stop();}catch(e){}recog=null;}
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+  const text=(finalTx||rawEl.textContent||'').trim();
+  if(text&&text.length>3)process(text);
+  else statusEl.textContent='выбери режим и нажми';
+}
+
+async function process(text){
+  const m=MODES[curMode];
+  const key=apiKey||localStorage.getItem('vd_groq')||'';
+  if(!key){
+    errEl.textContent='Введи Groq API ключ ниже.';
+    resultEl.textContent=text;resultEl.className='txt';
+    cpbtn.disabled=false;cbtn.disabled=false;
+    statusEl.textContent='нужен ключ';return;
+  }
+  statusEl.textContent=m.p;plblEl.textContent=m.p;
+  procEl.style.display='flex';resultEl.className='txt';resultEl.textContent='';
+  try{
+    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:1500,
+        messages:[{role:'user',content:m.f(text)}]})
+    });
+    const d=await r.json();
+    if(d.error)throw new Error(d.error.message);
+    const res=d.choices?.[0]?.message?.content;
+    if(res){resultEl.textContent=res;cpbtn.disabled=false;statusEl.textContent='готово ✦';}
+    else throw new Error('пустой ответ');
+  }catch(e){
+    resultEl.textContent=text;errEl.textContent='Ошибка: '+e.message;
+    cpbtn.disabled=false;statusEl.textContent='ошибка — вот исходный текст';
+  }
+  procEl.style.display='none';cbtn.disabled=false;
+}
+
+cpbtn.addEventListener('click',()=>{
+  const t=resultEl.textContent;if(!t)return;
+  navigator.clipboard.writeText(t).then(()=>{
+    const o=cpbtn.textContent;cpbtn.textContent='✓ Готово!';
+    setTimeout(()=>cpbtn.textContent=o,2000);
+  }).catch(()=>{
+    const r=document.createRange();r.selectNode(resultEl);
+    window.getSelection().removeAllRanges();window.getSelection().addRange(r);
+  });
+});
+
+cbtn.addEventListener('click',()=>{
+  rawEl.className='txt ph';rawEl.textContent='здесь появится твоя речь…';
+  resultEl.className='txt ph';resultEl.textContent='здесь появится обработанный текст…';
+  finalTx='';cpbtn.disabled=true;cbtn.disabled=true;
+  statusEl.textContent='выбери режим и нажми';errEl.textContent='';
+});
+
+// PWA
+const mf={name:'Voice 2026',short_name:'Голос',start_url:'.',display:'standalone',
+  background_color:'#0D0A1A',theme_color:'#0D0A1A',
+  icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230D0A1A'/><circle cx='50' cy='50' r='38' fill='%238B5CF6' opacity='.2'/><rect x='42' y='20' width='16' height='28' rx='8' fill='%23A78BFA'/><path d='M26 46a24 24 0 0048 0' stroke='%23A78BFA' stroke-width='4' fill='none' stroke-linecap='round'/><line x1='50' y1='70' x2='50' y2='80' stroke='%23A78BFA' stroke-width='4' stroke-linecap='round'/><line x1='38' y1='80' x2='62' y2='80' stroke='%23A78BFA' stroke-width='4' stroke-linecap='round'/></svg>",sizes:'192x192',type:'image/svg+xml'}]};
+const ml=document.createElement('link');
+ml.rel='manifest';ml.href='data:application/json,'+encodeURIComponent(JSON.stringify(mf));
+document.head.appendChild(ml);
+if('serviceWorker' in navigator){
+  const sw=`self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>new Response(''))));`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});
+}
+</script>
+</body>
+</html>
