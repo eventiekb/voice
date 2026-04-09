@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#050A18">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VOICE">
+<title>VOICE 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg:#050A18;
+  --bg2:rgba(0,240,255,0.03);
+  --bg3:rgba(0,240,255,0.06);
+  --cyan:#00F0FF;
+  --cyan2:rgba(0,240,255,0.6);
+  --cyan3:rgba(0,240,255,0.15);
+  --purple:#BF00FF;
+  --purple2:rgba(191,0,255,0.6);
+  --purple3:rgba(191,0,255,0.12);
+  --pink:#FF006E;
+  --text:#E0F8FF;
+  --text2:#7ABFCC;
+  --text3:#3A6A77;
+  --border:rgba(0,240,255,0.15);
+  --border2:rgba(0,240,255,0.35);
+  --glow-c:0 0 20px rgba(0,240,255,0.4);
+  --glow-p:0 0 20px rgba(191,0,255,0.4);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overscroll-behavior:none;background:var(--bg);}
+
+body {
+  font-family:'Rajdhani',sans-serif;
+  color:var(--text);
+  min-height:100vh;
+  background:
+    radial-gradient(ellipse 100% 40% at 50% 0%,rgba(0,240,255,0.08) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 30% at 100% 100%,rgba(191,0,255,0.1) 0%,transparent 50%),
+    radial-gradient(ellipse 40% 25% at 0% 60%,rgba(0,240,255,0.05) 0%,transparent 50%),
+    var(--bg);
+}
+
+/* Scanlines overlay */
+body::before {
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+}
+
+#app {
+  position:relative;z-index:1;
+  max-width:430px;margin:0 auto;
+  padding:env(safe-area-inset-top,16px) 1rem 3rem;
+}
+
+/* HEADER */
+.hdr {text-align:center;padding:1rem 0 0.75rem;}
+.hdr h1 {
+  font-family:'Share Tech Mono',monospace;
+  font-size:22px;letter-spacing:0.15em;
+  color:var(--cyan);
+  text-shadow:0 0 20px rgba(0,240,255,0.8),0 0 40px rgba(0,240,255,0.4);
+}
+.hdr h1 span {color:var(--purple);text-shadow:0 0 20px rgba(191,0,255,0.8);}
+.hdr p {
+  font-size:11px;color:var(--text3);letter-spacing:0.15em;
+  text-transform:uppercase;margin-top:4px;font-family:'Share Tech Mono',monospace;
+}
+
+/* THEME SWITCH */
+.theme-wrap {
+  display:flex;justify-content:center;gap:8px;margin-bottom:1rem;
+}
+.theme-btn {
+  padding:5px 16px;border-radius:4px;font-size:11px;font-weight:600;
+  letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;
+  font-family:'Rajdhani',sans-serif;transition:all 0.2s;
+  border:1px solid var(--border);background:transparent;color:var(--text3);
+}
+.theme-btn.active-cyan {
+  border-color:var(--cyan);color:var(--cyan);
+  box-shadow:0 0 12px rgba(0,240,255,0.4),inset 0 0 8px rgba(0,240,255,0.1);
+}
+.theme-btn.active-purple {
+  border-color:var(--purple);color:var(--purple);
+  box-shadow:0 0 12px rgba(191,0,255,0.4),inset 0 0 8px rgba(191,0,255,0.1);
+}
+
+/* GRID */
+.grid {
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:6px;margin:0.75rem 0;
+}
+.mb {
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:10px 4px 8px;border-radius:8px;cursor:pointer;
+  border:1px solid var(--border);
+  background:var(--bg2);
+  transition:all 0.15s;gap:3px;min-height:72px;
+  position:relative;overflow:hidden;
+}
+.mb::before {
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,transparent 40%,rgba(0,240,255,0.03) 100%);
+}
+.mb:active{transform:scale(0.93);}
+.mb .i {font-size:18px;line-height:1;}
+.mb .n {font-size:11px;font-weight:600;color:var(--text2);letter-spacing:0.05em;}
+.mb .s {font-size:9px;color:var(--text3);line-height:1.2;text-align:center;letter-spacing:0.03em;}
+
+/* CYAN theme active */
+body.cyan .mb.on {
+  background:rgba(0,240,255,0.08);
+  border-color:var(--cyan);
+  box-shadow:0 0 16px rgba(0,240,255,0.35),inset 0 0 12px rgba(0,240,255,0.08);
+}
+body.cyan .mb.on .n {color:var(--cyan);}
+body.cyan .mb.on .s {color:rgba(0,240,255,0.6);}
+
+/* PURPLE theme active */
+body.purple .mb.on {
+  background:rgba(191,0,255,0.08);
+  border-color:var(--purple);
+  box-shadow:0 0 16px rgba(191,0,255,0.35),inset 0 0 12px rgba(191,0,255,0.08);
+}
+body.purple .mb.on .n {color:var(--purple);}
+body.purple .mb.on .s {color:rgba(191,0,255,0.6);}
+
+/* STATUS */
+#status {
+  text-align:center;font-size:12px;color:var(--text3);
+  min-height:18px;margin:0.4rem 0;
+  font-family:'Share Tech Mono',monospace;letter-spacing:0.08em;
+}
+
+/* MIC BUTTON */
+.mic-area {display:flex;flex-direction:column;align-items:center;margin:0.5rem 0 0.75rem;}
+
+.mic-outer {
+  width:100px;height:100px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;cursor:pointer;
+}
+
+/* Animated border rings */
+.mic-outer::before,.mic-outer::after {
+  content:'';position:absolute;border-radius:50%;
+  border:1px solid;transition:all 0.3s;
+}
+body.cyan .mic-outer::before {
+  inset:-6px;border-color:rgba(0,240,255,0.25);
+  animation:spin1 8s linear infinite;
+}
+body.cyan .mic-outer::after {
+  inset:-14px;border-color:rgba(0,240,255,0.12);
+  animation:spin2 12s linear infinite reverse;
+}
+body.purple .mic-outer::before {
+  inset:-6px;border-color:rgba(191,0,255,0.25);
+  animation:spin1 8s linear infinite;
+}
+body.purple .mic-outer::after {
+  inset:-14px;border-color:rgba(191,0,255,0.12);
+  animation:spin2 12s linear infinite reverse;
+}
+@keyframes spin1{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes spin2{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+.mic-inner {
+  width:72px;height:72px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;position:relative;z-index:2;
+  border:1px solid;
+}
+body.cyan .mic-inner {
+  background:rgba(0,240,255,0.08);border-color:var(--cyan2);
+  box-shadow:0 0 24px rgba(0,240,255,0.3),inset 0 0 16px rgba(0,240,255,0.1);
+}
+body.purple .mic-inner {
+  background:rgba(191,0,255,0.08);border-color:var(--purple2);
+  box-shadow:0 0 24px rgba(191,0,255,0.3),inset 0 0 16px rgba(191,0,255,0.1);
+}
+.mic-inner.rec {
+  animation:micpulse 0.8s ease-in-out infinite alternate;
+}
+@keyframes micpulse {
+  from {transform:scale(1);}
+  to {transform:scale(1.08);}
+}
+body.cyan .mic-inner.rec {
+  background:rgba(255,0,110,0.15);border-color:var(--pink);
+  box-shadow:0 0 30px rgba(255,0,110,0.5),inset 0 0 20px rgba(255,0,110,0.15);
+}
+body.purple .mic-inner.rec {
+  background:rgba(255,0,110,0.15);border-color:var(--pink);
+  box-shadow:0 0 30px rgba(255,0,110,0.5),inset 0 0 20px rgba(255,0,110,0.15);
+}
+
+/* CARDS */
+.card {
+  border-radius:8px;padding:12px 14px;margin-bottom:8px;
+  border:1px solid var(--border);background:var(--bg2);
+  position:relative;overflow:hidden;
+}
+.card::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+}
+body.cyan .card::before {background:linear-gradient(90deg,transparent,rgba(0,240,255,0.4),transparent);}
+body.purple .card::before {background:linear-gradient(90deg,transparent,rgba(191,0,255,0.4),transparent);}
+
+.lbl {
+  font-size:9px;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--text3);margin-bottom:6px;
+  font-family:'Share Tech Mono',monospace;
+}
+body.cyan .lbl {color:rgba(0,240,255,0.4);}
+body.purple .lbl {color:rgba(191,0,255,0.4);}
+
+.txt {font-size:14px;line-height:1.75;min-height:44px;white-space:pre-wrap;color:var(--text);font-weight:400;}
+.txt.ph {color:var(--text3);font-style:italic;font-size:13px;}
+
+/* PROC */
+.proc {display:none;align-items:center;gap:6px;margin:2px 0 8px 2px;}
+.dot {
+  width:4px;height:4px;border-radius:50%;
+  animation:blink 1.1s ease-in-out infinite;
+}
+body.cyan .dot {background:var(--cyan);}
+body.purple .dot {background:var(--purple);}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.1}40%{opacity:1}}
+.plbl {
+  font-size:11px;font-family:'Share Tech Mono',monospace;letter-spacing:0.08em;
+}
+body.cyan .plbl {color:var(--cyan);}
+body.purple .plbl {color:var(--purple);}
+
+/* ACTIONS */
+.acts {display:flex;gap:8px;margin-top:8px;}
+.btn {
+  flex:1;padding:12px;border-radius:6px;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all 0.15s;font-family:'Rajdhani',sans-serif;
+  letter-spacing:0.08em;text-transform:uppercase;
+  border:1px solid var(--border);background:transparent;color:var(--text2);
+}
+.btn:active{transform:scale(0.96);}
+.btn.copy {order:2;}
+.btn.clear {order:1;}
+.btn:disabled{opacity:.2;cursor:default;transform:none;}
+
+body.cyan .btn.copy {
+  border-color:var(--cyan);color:var(--cyan);
+  box-shadow:0 0 12px rgba(0,240,255,0.25);
+}
+body.cyan .btn.copy:hover {background:rgba(0,240,255,0.08);}
+body.purple .btn.copy {
+  border-color:var(--purple);color:var(--purple);
+  box-shadow:0 0 12px rgba(191,0,255,0.25);
+}
+body.purple .btn.copy:hover {background:rgba(191,0,255,0.08);}
+
+#err {
+  font-size:11px;text-align:center;margin-top:8px;min-height:14px;
+  font-family:'Share Tech Mono',monospace;color:var(--pink);
+}
+
+/* API */
+.api {
+  margin-top:1rem;padding:14px;border-radius:8px;
+  border:1px solid var(--border);background:var(--bg2);
+  position:relative;overflow:hidden;
+}
+.api::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+}
+body.cyan .api::before {background:linear-gradient(90deg,transparent,rgba(0,240,255,0.3),transparent);}
+body.purple .api::before {background:linear-gradient(90deg,transparent,rgba(191,0,255,0.3),transparent);}
+
+.api-lbl {
+  font-size:9px;letter-spacing:0.18em;text-transform:uppercase;
+  margin-bottom:8px;font-family:'Share Tech Mono',monospace;
+}
+body.cyan .api-lbl {color:rgba(0,240,255,0.4);}
+body.purple .api-lbl {color:rgba(191,0,255,0.4);}
+
+.api-row {display:flex;gap:8px;}
+#ain {
+  flex:1;padding:9px 12px;border-radius:6px;font-size:12px;
+  background:rgba(0,0,0,0.4);border:1px solid var(--border);
+  color:var(--text);font-family:'Share Tech Mono',monospace;
+}
+body.cyan #ain:focus {outline:none;border-color:var(--cyan);box-shadow:0 0 8px rgba(0,240,255,0.2);}
+body.purple #ain:focus {outline:none;border-color:var(--purple);box-shadow:0 0 8px rgba(191,0,255,0.2);}
+#abtn {
+  padding:9px 14px;border-radius:6px;font-size:12px;font-weight:600;
+  border:1px solid;cursor:pointer;font-family:'Rajdhani',sans-serif;
+  letter-spacing:0.08em;text-transform:uppercase;background:transparent;
+  transition:all 0.15s;
+}
+body.cyan #abtn {border-color:var(--cyan);color:var(--cyan);}
+body.cyan #abtn:hover {background:rgba(0,240,255,0.1);}
+body.purple #abtn {border-color:var(--purple);color:var(--purple);}
+body.purple #abtn:hover {background:rgba(191,0,255,0.1);}
+
+.api-note {font-size:10px;color:var(--text3);margin-top:7px;line-height:1.6;font-family:'Share Tech Mono',monospace;}
+.api-note a {color:var(--cyan);}
+
+.install {
+  margin-top:1rem;padding:10px 14px;border-radius:6px;
+  border:1px dashed rgba(0,240,255,0.15);
+  font-size:10px;color:var(--text3);line-height:1.7;text-align:center;
+  font-family:'Share Tech Mono',monospace;
+}
+
+/* MODE SELECTOR POPUP */
+#mode-popup {
+  display:none;position:fixed;inset:0;z-index:100;
+  background:rgba(5,10,24,0.92);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;flex-direction:column;padding:2rem;
+}
+#mode-popup.show {display:flex;}
+#mode-popup h2 {
+  font-family:'Share Tech Mono',monospace;font-size:14px;
+  letter-spacing:0.15em;text-transform:uppercase;margin-bottom:1.5rem;
+}
+body.cyan #mode-popup h2 {color:var(--cyan);text-shadow:0 0 16px rgba(0,240,255,0.6);}
+body.purple #mode-popup h2 {color:var(--purple);text-shadow:0 0 16px rgba(191,0,255,0.6);}
+#mode-popup .grid2 {
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:340px;
+}
+#mode-popup .mb2 {
+  padding:12px 6px;border-radius:8px;cursor:pointer;text-align:center;
+  border:1px solid var(--border);background:var(--bg2);transition:all 0.15s;
+}
+#mode-popup .mb2:active {transform:scale(0.93);}
+#mode-popup .mb2 .i2 {font-size:22px;display:block;margin-bottom:4px;}
+#mode-popup .mb2 .n2 {font-size:11px;font-weight:600;color:var(--text2);}
+body.cyan #mode-popup .mb2:hover {border-color:var(--cyan);box-shadow:0 0 12px rgba(0,240,255,0.3);}
+body.purple #mode-popup .mb2:hover {border-color:var(--purple);box-shadow:0 0 12px rgba(191,0,255,0.3);}
+#popup-cancel {
+  margin-top:1rem;padding:10px 24px;border-radius:6px;
+  border:1px solid var(--border);background:transparent;
+  color:var(--text3);cursor:pointer;font-family:'Rajdhani',sans-serif;
+  font-size:12px;letter-spacing:0.1em;text-transform:uppercase;
+}
+</style>
+</head>
+<body class="cyan">
+<div id="app">
+  <div class="hdr">
+    <h1>VOICE<span>_</span>2026</h1>
+    <p>select mode · speak · process</p>
+  </div>
+
+  <div class="theme-wrap">
+    <button class="theme-btn active-cyan" onclick="setTheme('cyan')">◈ CYBER</button>
+    <button class="theme-btn" onclick="setTheme('purple')">◈ NEON</button>
+  </div>
+
+  <div class="grid" id="grid">
+    <div class="mb" data-mode="story"><span class="i">📖</span><span class="n">Рассказ</span><span class="s">авто-стиль</span></div>
+    <div class="mb" data-mode="friend"><span class="i">💬</span><span class="n">Другу</span><span class="s">живой текст</span></div>
+    <div class="mb" data-mode="prompt"><span class="i">🧠</span><span class="n">Промпт</span><span class="s">мега-промпт</span></div>
+    <div class="mb" data-mode="business"><span class="i">✉️</span><span class="n">Деловое</span><span class="s">официально</span></div>
+    <div class="mb" data-mode="tasks"><span class="i">📋</span><span class="n">Задачи</span><span class="s">приоритеты</span></div>
+    <div class="mb" data-mode="post"><span class="i">🔥</span><span class="n">Пост</span><span class="s">соцсети</span></div>
+    <div class="mb" data-mode="diary"><span class="i">🧘</span><span class="n">Дневник</span><span class="s">личное</span></div>
+    <div class="mb" data-mode="translate"><span class="i">🌍</span><span class="n">Перевод</span><span class="s">→ EN</span></div>
+    <div class="mb" data-mode="speech"><span class="i">🎤</span><span class="n">Речь</span><span class="s">выступление</span></div>
+    <div class="mb" data-mode="summary"><span class="i">⚡</span><span class="n">Кратко</span><span class="s">суть текста</span></div>
+    <div class="mb" data-mode="ideas"><span class="i">💡</span><span class="n">Идеи</span><span class="s">мозгоштурм</span></div>
+    <div class="mb" data-mode="rewrite"><span class="i">✨</span><span class="n">Улучшить</span><span class="s">чище, лучше</span></div>
+  </div>
+
+  <div id="status">// выбери режим и нажми</div>
+
+  <div class="mic-area">
+    <div class="mic-outer" id="mic-outer">
+      <div class="mic-inner" id="mic-inner">
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+          <rect x="11" y="2" width="8" height="15" rx="4" fill="currentColor" opacity="0.9"/>
+          <path d="M5 14a10 10 0 0020 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.9"/>
+          <line x1="15" y1="24" x2="15" y2="28" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="9" y1="28" x2="21" y2="28" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="lbl">// input_stream</div>
+    <div class="txt ph" id="raw">ожидание голосового ввода...</div>
+  </div>
+
+  <div class="proc" id="proc">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <span class="plbl" id="plbl">processing...</span>
+  </div>
+
+  <div class="card">
+    <div class="lbl">// output_stream</div>
+    <div class="txt ph" id="result">результат обработки появится здесь...</div>
+  </div>
+
+  <div class="acts">
+    <button class="btn clear" id="cbtn" disabled>Очистить</button>
+    <button class="btn copy" id="cpbtn" disabled>Скопировать</button>
+  </div>
+  <div id="err"></div>
+
+  <div class="api">
+    <div class="api-lbl">// groq_api_key</div>
+    <div class="api-row">
+      <input type="password" id="ain" placeholder="gsk_..." autocomplete="off" spellcheck="false">
+      <button id="abtn">Save</button>
+    </div>
+    <div class="api-note">stored locally · <a href="https://console.groq.com" target="_blank">console.groq.com</a> · free</div>
+  </div>
+
+  <div class="install">
+    ◈ iOS: Safari → Share → Add to Home Screen<br>
+    ◈ Android: Chrome → ⋮ → Add to Home Screen
+  </div>
+</div>
+
+<!-- MODE SELECTOR POPUP -->
+<div id="mode-popup">
+  <h2>// выбери режим обработки</h2>
+  <div class="grid2">
+    <div class="mb2" data-mode="story"><span class="i2">📖</span><span class="n2">Рассказ</span></div>
+    <div class="mb2" data-mode="friend"><span class="i2">💬</span><span class="n2">Другу</span></div>
+    <div class="mb2" data-mode="prompt"><span class="i2">🧠</span><span class="n2">Промпт</span></div>
+    <div class="mb2" data-mode="business"><span class="i2">✉️</span><span class="n2">Деловое</span></div>
+    <div class="mb2" data-mode="tasks"><span class="i2">📋</span><span class="n2">Задачи</span></div>
+    <div class="mb2" data-mode="post"><span class="i2">🔥</span><span class="n2">Пост</span></div>
+    <div class="mb2" data-mode="diary"><span class="i2">🧘</span><span class="n2">Дневник</span></div>
+    <div class="mb2" data-mode="translate"><span class="i2">🌍</span><span class="n2">Перевод</span></div>
+    <div class="mb2" data-mode="speech"><span class="i2">🎤</span><span class="n2">Речь</span></div>
+    <div class="mb2" data-mode="summary"><span class="i2">⚡</span><span class="n2">Кратко</span></div>
+    <div class="mb2" data-mode="ideas"><span class="i2">💡</span><span class="n2">Идеи</span></div>
+    <div class="mb2" data-mode="rewrite"><span class="i2">✨</span><span class="n2">Улучшить</span></div>
+  </div>
+  <button id="popup-cancel">Отмена</button>
+</div>
+
+<script>
+// ── THEME ──
+function setTheme(t) {
+  document.body.className = t;
+  document.querySelectorAll('.theme-btn').forEach(b => b.className = 'theme-btn');
+  document.querySelector(`.theme-btn:nth-child(${t==='cyan'?1:2})`).classList.add(t==='cyan'?'active-cyan':'active-purple');
+  localStorage.setItem('vd_theme', t);
+  updateMicColor();
+}
+function updateMicColor() {
+  const svg = document.querySelector('.mic-inner svg');
+  const c = document.body.classList.contains('cyan') ? '#00F0FF' : '#BF00FF';
+  svg.style.color = c;
+}
+const savedTheme = localStorage.getItem('vd_theme') || 'cyan';
+setTheme(savedTheme);
+
+// ── API KEY ──
+let apiKey = localStorage.getItem('vd_groq') || '';
+const ainEl = document.getElementById('ain');
+const abtnEl = document.getElementById('abtn');
+if(apiKey) ainEl.value = apiKey;
+abtnEl.addEventListener('click', () => {
+  const k = ainEl.value.trim();
+  if(k.startsWith('gsk_') || k.startsWith('sk-')) {
+    localStorage.setItem('vd_groq', k); apiKey = k;
+    abtnEl.textContent = '✓ OK';
+    setTimeout(() => abtnEl.textContent = 'Save', 2000);
+  } else {
+    document.getElementById('err').textContent = 'ERROR: key must start with gsk_...';
+  }
+});
+
+// ── PROMPTS ──
+const MODES = {
+  story: {
+    p: 'анализирую стиль и структурирую...',
+    f: t => `Ты профессиональный литературный редактор. Твоя задача — обработать надиктованный текст.
+
+ШАГИ (выполни строго по порядку):
+1. ОПРЕДЕЛИ СТИЛЬ текста по содержанию:
+   - Если технический/научный → используй сухой точный язык, термины, без украшений
+   - Если художественный/роман → добавь образность, метафоры, живые описания
+   - Если личный рассказ/биография → тёплый живой язык, сохрани голос автора
+   - Если деловой → чёткий структурированный стиль
+
+2. ИСПРАВЬ: знаки препинания, ошибки распознавания речи, повторы слов
+
+3. РАЗДЕЛИ на абзацы по смыслу (каждая новая мысль — новый абзац)
+
+4. СОХРАНИ: объём текста (не увеличивай больше чем на 10%), авторский голос и все смыслы
+
+5. Если текст длиннее 5 абзацев — добавь краткое оглавление в самом начале
+
+ЗАПРЕЩЕНО: добавлять новые факты, менять смысл, писать от себя, добавлять вводные фразы типа "Вот исправленный текст"
+
+Верни ТОЛЬКО готовый текст. Никаких пояснений.
+
+ТЕКСТ: ${t}`
+  },
+  friend: {
+    p: 'оформляю сообщение другу...',
+    f: t => `Ты помогаешь написать сообщение другу в мессенджере.
+
+ЗАДАЧА: минимально обработать надиктованный текст так, чтобы он читался легко и естественно.
+
+ДЕЛАЙ:
+- Расставь знаки препинания (точки, запятые, восклицательные знаки)
+- Исправь очевидные ошибки распознавания речи
+- Раздели на короткие абзацы если текст длинный
+- Добавь 3-5 эмодзи точно по контексту (не больше!)
+- Сохрани разговорный стиль, сленг, фразы автора
+
+НЕ ДЕЛАЙ:
+- Не переписывай текст
+- Не добавляй новые мысли
+- Не меняй объём (максимум ±5%)
+- Не делай текст официальным
+
+Верни ТОЛЬКО готовое сообщение. Без пояснений.
+
+ТЕКСТ: ${t}`
+  },
+  prompt: {
+    p: 'создаю профессиональный промпт...',
+    f: t => `Ты — эксперт по промпт-инжинирингу уровня senior. Человек надиктовал задачу голосом. Твоя задача — создать максимально эффективный промпт для языковой модели.
+
+АЛГОРИТМ:
+1. Извлеки СУТЬ задачи из сырого текста (игнорируй слова-паразиты)
+2. Определи ЦЕЛЬ: что должна сделать модель
+3. Создай промпт по следующей СТРУКТУРЕ:
+
+---
+**РОЛЬ:** [назначь модели конкретную экспертную роль]
+
+**КОНТЕКСТ:** [опиши ситуацию и зачем это нужно]
+
+**ЗАДАЧА:** [чётко сформулируй что нужно сделать]
+
+**ТРЕБОВАНИЯ:**
+- [конкретное требование 1]
+- [конкретное требование 2]
+- [добавь столько сколько нужно]
+
+**ФОРМАТ ОТВЕТА:** [опиши как должен выглядеть результат: структура, длина, стиль]
+
+**ОГРАНИЧЕНИЯ:** [что запрещено делать модели]
+
+**ПРИМЕР** (если уместно): [краткий пример желаемого результата]
+---
+
+ВАЖНО: промпт должен быть настолько детальным, чтобы даже слабая модель дала отличный результат. Пиши на русском.
+
+Верни ТОЛЬКО готовый промпт в указанной структуре. Без вводных фраз.
+
+ИСХОДНАЯ МЫСЛЬ: ${t}`
+  },
+  business: {
+    p: 'оформляю деловое письмо...',
+    f: t => `Ты — опытный бизнес-редактор. Преобразуй надиктованный текст в профессиональное деловое письмо.
+
+СТРУКТУРА письма:
+1. Обращение (если есть адресат — используй, если нет — "Уважаемый коллега,")
+2. Вводная фраза (цель письма в 1 предложении)
+3. Основная часть (суть, разбитая на абзацы)
+4. Конкретные действия или запросы (если есть)
+5. Заключение ("С уважением," или "С наилучшими пожеланиями,")
+
+ТРЕБОВАНИЯ:
+- Официальный вежливый тон без фамильярности
+- Чёткие короткие предложения
+- Никакой воды и лишних слов
+- Сохрани все факты и договорённости из исходного текста
+- Исправь ошибки распознавания речи
+- Расставь знаки препинания
+
+ЗАПРЕЩЕНО: добавлять факты которых нет в исходном тексте, менять смысл
+
+Верни ТОЛЬКО готовое письмо. Без пояснений.
+
+ТЕКСТ: ${t}`
+  },
+  tasks: {
+    p: 'извлекаю задачи и приоритеты...',
+    f: t => `Ты — система управления задачами. Извлеки все задачи, дела и действия из надиктованного текста.
+
+АЛГОРИТМ:
+1. Найди ВСЕ упомянутые задачи, дела, намерения, обязательства
+2. Если есть СРОКИ — укажи их рядом с задачей
+3. Определи ПРИОРИТЕТ каждой задачи:
+   🔴 СРОЧНО — нужно сделать сегодня/сейчас
+   🟡 ВАЖНО — на этой неделе
+   🟢 ОБЫЧНОЕ — когда будет время
+4. Сгруппируй задачи по темам если их много
+
+ФОРМАТ каждой задачи:
+☐ [Приоритет-эмодзи] Задача [срок если есть]
+
+Если задач нет — напиши: "Задачи не обнаружены в тексте"
+
+Верни ТОЛЬКО список задач. Без пояснений.
+
+ТЕКСТ: ${t}`
+  },
+  post: {
+    p: 'создаю пост для соцсетей...',
+    f: t => `Ты — SMM-специалист с опытом создания вирального контента. Создай цепляющий пост для Telegram/Instagram.
+
+СТРУКТУРА поста:
+1. ХУКЛАЙН (первые 1-2 строки) — должен зацепить и заставить читать дальше. Используй: вопрос, провокацию, неожиданный факт или цифру
+2. ОСНОВНОЙ ТЕКСТ — раскрой мысль живо и конкретно. Короткие предложения. Разбей на абзацы.
+3. ВЫВОД/ПРИЗЫВ — что читатель должен подумать или сделать
+4. ХЭШТЕГИ — 3-5 релевантных хэштега
+
+ТРЕБОВАНИЯ:
+- Живой разговорный стиль (не официальный!)
+- Эмодзи по смыслу (5-8 штук, не больше)
+- Длина: 150-300 слов (не больше)
+- Сохрани главную мысль автора
+- Никакой воды
+
+Верни ТОЛЬКО готовый пост. Без пояснений.
+
+ТЕКСТ: ${t}`
+  },
+  diary: {
+    p: 'оформляю дневниковую запись...',
+    f: t => `Ты — бережный редактор личного дневника. Твоя задача — минимально причесать надиктованный текст, сохранив его абсолютную подлинность.
+
+ДЕЛАЙ:
+- Расставь знаки препинания
+- Исправь ошибки распознавания речи
+- Раздели на абзацы по смыслу и настроению
+- Сохрани все эмоции, переживания, личные слова автора
+- Сохрани объём (не увеличивай!)
+
+НЕ ДЕЛАЙ:
+- Не меняй стиль на литературный
+- Не добавляй красивостей и украшений
+- Не исправляй "неправильные" но авторские формулировки
+- Не добавляй новые мысли
+- Не делай текст "красивее" — он должен остаться живым и настоящим
+
+Это личный дневник — каждое слово автора ценно.
+
+Верни ТОЛЬКО готовую запись. Без пояснений.
+
+ТЕКСТ: ${t}`
+  },
+  translate: {
+    p: 'перевожу на английский...',
+    f: t => `Ты — профессиональный переводчик русского и английского языков.
+
+ЗАДАЧА: переведи текст с русского на английский.
+
+ТРЕБОВАНИЯ:
+- Используй естественный современный английский (не дословный перевод)
+- Сохрани тон и стиль оригинала: если разговорный — переводи разговорно, если официальный — официально
+- Сохрани структуру и абзацы
+- Исправь ошибки распознавания речи перед переводом
+- Если есть специфические русские выражения без прямого аналога — подбери эквивалент
+
+Верни ТОЛЬКО перевод на английском. Без пояснений.
+
+ТЕКСТ: ${t}`
+  },
+  speech: {
+    p: 'готовлю текст выступления...',
+    f: t => `Ты — спичрайтер и коуч по публичным выступлениям. Преобразуй надиктованный текст в готовое выступление или презентационную речь.
+
+СТРУКТУРА:
+1. ВСТУПЛЕНИЕ (30 сек) — зацепи аудиторию: вопрос, история, факт
+2. ОСНОВНАЯ ЧАСТЬ — раздели на 2-3 чётких блока с подзаголовками
+3. КЛЮЧЕВЫЕ ТЕЗИСЫ — выдели главные мысли
+4. ЗАКЛЮЧЕНИЕ — запоминающийся финал + призыв к действию
+
+ТРЕБОВАНИЯ:
+- Язык живой, не канцелярский
+- Короткие предложения (легко произносить вслух)
+- Расставь паузы обозначением [пауза] в нужных местах
+- Выдели ключевые слова КАПСЛОКОМ для акцента при чтении
+- Длина: не больше 3-5 минут чтения вслух
+
+Верни ТОЛЬКО готовый текст выступления. Без пояснений.
+
+ТЕКСТ: ${t}`
+  },
+  summary: {
+    p: 'создаю краткое резюме...',
+    f: t => `Ты — эксперт по сжатию информации. Создай максимально сжатое и точное резюме текста.
+
+АЛГОРИТМ:
+1. Найди ГЛАВНУЮ МЫСЛЬ (1 предложение)
+2. Выдели 3-5 КЛЮЧЕВЫХ ТЕЗИСОВ
+3. Укажи ВЫВОДЫ или следующие шаги если есть
+
+ФОРМАТ:
+**СУТЬ:** [одно предложение — о чём весь текст]
+
+**КЛЮЧЕВЫЕ ТЕЗИСЫ:**
+• [тезис 1]
+• [тезис 2]
+• [тезис 3]
+
+**ВЫВОД:** [если есть в тексте]
+
+ТРЕБОВАНИЯ:
+- Резюме не должно быть длиннее 20% от оригинала
+- Только факты из оригинала — ничего от себя
+- Никакой воды
+
+Верни ТОЛЬКО резюме. Без пояснений.
+
+ТЕКСТ: ${t}`
+  },
+  ideas: {
+    p: 'развиваю идеи...',
+    f: t => `Ты — креативный директор и стратег. Человек надиктовал зачаток идеи или мысли. Твоя задача — структурировать и развить её.
+
+АЛГОРИТМ:
+1. Сформулируй ИДЕЮ чётко (1-2 предложения)
+2. Найди ПРОБЛЕМУ которую она решает
+3. Предложи 3-5 ВАРИАНТОВ РЕАЛИЗАЦИИ (от простого к сложному)
+4. Укажи БЫСТРЫЙ СТАРТ — что можно сделать прямо сейчас
+5. Предупреди о РИСКАХ или сложностях (если очевидны)
+
+ФОРМАТ:
+**ИДЕЯ:** [чёткая формулировка]
+**РЕШАЕТ:** [какую проблему]
+**КАК РЕАЛИЗОВАТЬ:**
+1. [вариант]
+2. [вариант]
+3. [вариант]
+**ПЕРВЫЙ ШАГ:** [конкретное действие]
+**РИСКИ:** [если есть]
+
+Будь конкретным и практичным. Никакой воды.
+
+Верни ТОЛЬКО структурированный разбор идеи. Без вводных фраз.
+
+ТЕКСТ: ${t}`
+  },
+  rewrite: {
+    p: 'улучшаю текст...',
+    f: t => `Ты — профессиональный редактор-корректор. Улучши текст сохранив его суть и объём.
+
+ДЕЛАЙ:
+- Исправь ошибки распознавания речи
+- Расставь знаки препинания
+- Убери слова-паразиты (ну, вот, это самое, типа, как бы)
+- Убери повторы и тавтологию
+- Сделай предложения более чёткими и читаемыми
+- Раздели на абзацы если нужно
+
+НЕ ДЕЛАЙ:
+- Не меняй объём (допустимо сокращение до 15% за счёт воды)
+- Не добавляй новые мысли
+- Не меняй стиль кардинально
+- Не переписывай — только улучшай
+
+Верни ТОЛЬКО улучшенный текст. Без пояснений и сравнений с оригиналом.
+
+ТЕКСТ: ${t}`
+  }
+};
+
+// ── STATE ──
+const $ = id => document.getElementById(id);
+const statusEl=$('status'), rawEl=$('raw'), resultEl=$('result');
+const procEl=$('proc'), plblEl=$('plbl'), errEl=$('err');
+const cbtn=$('cbtn'), cpbtn=$('cpbtn');
+const micInner=$('mic-inner'), micOuter=$('mic-outer');
+const modePopup=$('mode-popup');
+
+let curMode=null, isRec=false, recog=null, finalTx='';
+let stream=null, aCtx=null, analyser=null, frame=null;
+let pendingText=null;
+
+// ── WAVE (removed visual, kept audio context) ──
+function startAudio(ms) {
+  try {
+    aCtx=new(window.AudioContext||window.webkitAudioContext)();
+    analyser=aCtx.createAnalyser();analyser.fftSize=256;
+    aCtx.createMediaStreamSource(ms).connect(analyser);
+  } catch(e) {}
+}
+function stopAudio() {
+  if(aCtx){try{aCtx.close();}catch(e){}aCtx=null;}analyser=null;
+}
+
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+// ── MODE BUTTONS (grid) ──
+document.querySelectorAll('#grid .mb').forEach(b => {
+  b.addEventListener('click', async () => {
+    if(isRec) { stopRec(); return; }
+    document.querySelectorAll('#grid .mb').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    curMode = b.dataset.mode;
+    errEl.textContent = '';
+    if(!SR) { errEl.textContent='ERROR: используй Chrome или Safari'; return; }
+    try { stream = await navigator.mediaDevices.getUserMedia({audio:true}); }
+    catch(e) { errEl.textContent='ERROR: нет доступа к микрофону'; return; }
+    startRec();
+  });
+});
+
+// ── MIC BUTTON ──
+micOuter.addEventListener('click', async () => {
+  if(isRec) { stopRec(); return; }
+  errEl.textContent = '';
+  if(!SR) { errEl.textContent='ERROR: используй Chrome или Safari'; return; }
+  try { stream = await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(e) { errEl.textContent='ERROR: нет доступа к микрофону'; return; }
+  // Start recording immediately, ask mode after
+  startRec(true);
+});
+
+// ── POPUP ──
+document.querySelectorAll('#mode-popup .mb2').forEach(b => {
+  b.addEventListener('click', () => {
+    curMode = b.dataset.mode;
+    document.querySelectorAll('#grid .mb').forEach(x => {
+      x.classList.toggle('on', x.dataset.mode === curMode);
+    });
+    modePopup.classList.remove('show');
+    if(pendingText) { processText(pendingText); pendingText=null; }
+  });
+});
+$('popup-cancel').addEventListener('click', () => {
+  modePopup.classList.remove('show');
+  pendingText = null;
+  statusEl.textContent = '// выбери режим и нажми';
+  cbtn.disabled = true;
+});
+
+// ── RECORDING ──
+function startRec(askModeAfter=false) {
+  finalTx='';
+  rawEl.textContent='';rawEl.className='txt';
+  resultEl.className='txt ph';resultEl.textContent='результат обработки появится здесь...';
+  cpbtn.disabled=true;cbtn.disabled=true;isRec=true;
+  statusEl.textContent='// recording... нажми снова чтобы остановить';
+  micInner.classList.add('rec');
+  startAudio(stream);
+
+  recog=new SR();recog.lang='ru-RU';recog.interimResults=true;recog.continuous=true;
+  recog.onresult=e=>{
+    let iv='';finalTx='';
+    for(let i=0;i<e.results.length;i++){
+      if(e.results[i].isFinal)finalTx+=e.results[i][0].transcript+' ';
+      else iv+=e.results[i][0].transcript;
+    }
+    rawEl.textContent=finalTx+iv;
+  };
+  recog.onerror=e=>{if(e.error!=='aborted')errEl.textContent='ERROR: '+e.error;stopRec(askModeAfter);};
+  recog.onend=()=>{if(isRec)stopRec(askModeAfter);};
+  try{recog.start();}catch(e){errEl.textContent='ERROR: не удалось запустить';stopRec();}
+}
+
+function stopRec(askModeAfter=false) {
+  isRec=false;
+  micInner.classList.remove('rec');
+  stopAudio();
+  document.querySelectorAll('#grid .mb').forEach(x=>x.classList.remove('on'));
+  if(recog){try{recog.stop();}catch(e){}recog=null;}
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+  const text=(finalTx||rawEl.textContent||'').trim();
+  if(!text||text.length<=3){statusEl.textContent='// выбери режим и нажми';return;}
+  if(askModeAfter && !curMode) {
+    pendingText=text;
+    modePopup.classList.add('show');
+  } else if(curMode) {
+    processText(text);
+  } else {
+    pendingText=text;
+    modePopup.classList.add('show');
+  }
+}
+
+async function processText(text) {
+  const m = MODES[curMode];
+  const key = apiKey || localStorage.getItem('vd_groq') || '';
+  if(!key) {
+    errEl.textContent='ERROR: введи Groq API ключ ниже';
+    resultEl.textContent=text;resultEl.className='txt';
+    cpbtn.disabled=false;cbtn.disabled=false;
+    statusEl.textContent='// нужен API ключ';return;
+  }
+  statusEl.textContent='// '+m.p;
+  plblEl.textContent=m.p;
+  procEl.style.display='flex';
+  resultEl.className='txt';resultEl.textContent='';
+
+  try {
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({
+        model:'llama-3.3-70b-versatile',
+        max_tokens:2000,
+        temperature:0.3,
+        messages:[{role:'user',content:m.f(text)}]
+      })
+    });
+    const d = await r.json();
+    if(d.error) throw new Error(d.error.message);
+    const res = d.choices?.[0]?.message?.content;
+    if(res){
+      resultEl.textContent=res;
+      cpbtn.disabled=false;
+      statusEl.textContent='// done ✦';
+    } else throw new Error('empty response');
+  } catch(e) {
+    resultEl.textContent=text;
+    errEl.textContent='ERROR: '+e.message;
+    cpbtn.disabled=false;
+    statusEl.textContent='// error — showing raw text';
+  }
+  procEl.style.display='none';
+  cbtn.disabled=false;
+}
+
+cpbtn.addEventListener('click', () => {
+  const t = resultEl.textContent;if(!t)return;
+  navigator.clipboard.writeText(t).then(() => {
+    const o=cpbtn.textContent;cpbtn.textContent='✓ COPIED';
+    setTimeout(()=>cpbtn.textContent=o,2000);
+  }).catch(() => {
+    const r=document.createRange();r.selectNode(resultEl);
+    window.getSelection().removeAllRanges();window.getSelection().addRange(r);
+  });
+});
+
+cbtn.addEventListener('click', () => {
+  rawEl.className='txt ph';rawEl.textContent='ожидание голосового ввода...';
+  resultEl.className='txt ph';resultEl.textContent='результат обработки появится здесь...';
+  finalTx='';cpbtn.disabled=true;cbtn.disabled=true;curMode=null;
+  document.querySelectorAll('#grid .mb').forEach(x=>x.classList.remove('on'));
+  statusEl.textContent='// выбери режим и нажми';errEl.textContent='';
+  pendingText=null;
+});
+
+// PWA
+const mf={name:'VOICE 2026',short_name:'VOICE',start_url:'.',display:'standalone',
+  background_color:'#050A18',theme_color:'#050A18',
+  icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='0' fill='%23050A18'/><rect x='1' y='1' width='98' height='98' rx='0' fill='none' stroke='%2300F0FF' stroke-width='2'/><rect x='42' y='18' width='16' height='28' rx='8' fill='%2300F0FF'/><path d='M26 44a24 24 0 0048 0' stroke='%2300F0FF' stroke-width='3' fill='none' stroke-linecap='round'/><line x1='50' y1='68' x2='50' y2='78' stroke='%2300F0FF' stroke-width='3' stroke-linecap='round'/><line x1='38' y1='78' x2='62' y2='78' stroke='%2300F0FF' stroke-width='3' stroke-linecap='round'/></svg>",sizes:'192x192',type:'image/svg+xml'}]};
+const ml=document.createElement('link');
+ml.rel='manifest';ml.href='data:application/json,'+encodeURIComponent(JSON.stringify(mf));
+document.head.appendChild(ml);
+if('serviceWorker' in navigator){
+  const sw=`self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>new Response(''))));`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});
+}
+</script>
+</body>
+</html>
