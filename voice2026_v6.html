@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#050A18">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VOICE">
+<title>VOICE 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050A18;--text:#E0F8FF;--text2:#7ABFCC;--text3:#3A5A66;
+  --glass:rgba(255,255,255,0.05);--red:#FF2244;
+  --ac:#00F0FF;--acr:0,240,255;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overscroll-behavior:none;background:var(--bg)}
+body{font-family:'Rajdhani',sans-serif;color:var(--text);min-height:100vh;min-height:100dvh}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px)}
+#glow{position:fixed;inset:0;pointer-events:none;z-index:0;transition:background .4s;
+  background:radial-gradient(ellipse 100% 40% at 50% 0%,rgba(var(--acr),.1) 0%,transparent 60%)}
+#app{position:relative;z-index:1;max-width:430px;margin:0 auto;
+  padding:env(safe-area-inset-top,16px) .75rem 2rem}
+
+/* HEADER */
+.hdr{text-align:center;padding:.6rem 0 .3rem}
+.hdr h1{font-family:'Share Tech Mono',monospace;font-size:20px;letter-spacing:.2em;
+  color:var(--ac);text-shadow:0 0 20px var(--ac),0 0 40px var(--ac);transition:all .3s}
+.hdr p{font-size:10px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;margin-top:2px;font-family:'Share Tech Mono',monospace}
+
+/* TABS */
+.tabs{display:flex;gap:4px;margin:.5rem 0;background:rgba(0,0,0,.3);border-radius:12px;padding:4px;border:1px solid rgba(255,255,255,.06)}
+.tab{flex:1;padding:8px 4px;border-radius:9px;font-size:11px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;cursor:pointer;font-family:'Rajdhani',sans-serif;
+  border:1px solid transparent;background:0;color:var(--text3);transition:all .2s;text-align:center}
+.tab:active{transform:scale(.95)}
+.tab.on{background:rgba(var(--acr),.1);border-color:rgba(var(--acr),.4);color:var(--ac);box-shadow:0 0 12px rgba(var(--acr),.2)}
+
+/* PANELS */
+.panel{display:none}.panel.on{display:block}
+.sec-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--text3);margin:.6rem 0 .35rem 2px;opacity:.6}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:.35rem}
+
+/* MODE BUTTONS — no backdrop-filter for performance */
+.mb{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:10px 4px 8px;border-radius:12px;cursor:pointer;
+  border:1px solid rgba(255,255,255,.07);background:var(--glass);
+  transition:transform .15s,border-color .15s;gap:4px;min-height:70px;position:relative}
+.mb::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent)}
+.mb:active{transform:scale(.92)}
+.mb svg{width:22px;height:22px;stroke:var(--ac);filter:drop-shadow(0 0 3px rgba(var(--acr),.4));transition:filter .2s}
+.mb .n{font-size:10px;font-weight:600;color:var(--text2);letter-spacing:.04em;text-align:center;line-height:1.2}
+.mb .s{font-size:8px;color:var(--text3);text-align:center;line-height:1.2}
+.mb.on{border-color:rgba(var(--acr),.5)}
+.mb.on svg{filter:drop-shadow(0 0 6px var(--ac))}
+.mb.on .n{color:var(--ac)}
+
+/* STATUS */
+#status{text-align:center;font-size:11px;color:var(--text3);min-height:16px;margin:.3rem 0;
+  font-family:'Share Tech Mono',monospace;letter-spacing:.08em}
+
+/* MIC BUTTON */
+.mic-area{display:flex;justify-content:center;margin:.5rem 0}
+#mic{width:58%;height:70px;border-radius:14px;position:relative;cursor:pointer;overflow:hidden;
+  border:1.5px solid rgba(var(--acr),.5);background:rgba(var(--acr),.07);
+  box-shadow:0 0 18px rgba(var(--acr),.18);transition:all .25s}
+#mic.rec{border-color:rgba(255,34,68,.8)!important;background:rgba(255,34,68,.12)!important;
+  box-shadow:0 0 24px rgba(255,34,68,.4)!important}
+#mic-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#mic-lbl{position:absolute;bottom:5px;width:100%;text-align:center;
+  font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;color:rgba(var(--acr),.7);transition:color .25s;pointer-events:none}
+#mic.rec #mic-lbl{color:rgba(255,80,80,.9)}
+
+/* CARDS */
+.card{border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,.08);
+  background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);overflow:hidden}
+.card-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.18em;
+  text-transform:uppercase;padding:8px 12px 0;color:var(--ac);opacity:.5;transition:color .3s}
+.card textarea{width:100%;min-height:68px;padding:6px 12px 10px;background:0;border:0;
+  outline:0;color:var(--text);font-size:13px;line-height:1.7;font-family:'Rajdhani',sans-serif;
+  font-weight:400;resize:none;overflow-y:auto}
+.card textarea::placeholder{color:var(--text3);font-style:italic;font-size:12px}
+
+/* PROCESSING */
+.proc{display:none;align-items:center;gap:6px;margin:2px 0 6px 2px}
+.dot{width:4px;height:4px;border-radius:50%;background:var(--ac);animation:blink 1.1s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.1}40%{opacity:1}}
+.plbl{font-size:11px;font-family:'Share Tech Mono',monospace;letter-spacing:.06em;color:var(--ac)}
+
+/* ACTIONS */
+.acts{display:flex;gap:8px;margin-top:6px}
+.btn{flex:1;padding:14px 8px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;
+  transition:all .18s;font-family:'Rajdhani',sans-serif;letter-spacing:.1em;text-transform:uppercase;border:2px solid}
+.btn:active{transform:scale(.96)}
+.btn:disabled{opacity:.25;cursor:default;transform:none}
+#cbtn{order:1;background:rgba(255,34,68,.18);border-color:rgba(255,34,68,.85);color:#FF5566;
+  box-shadow:0 0 14px rgba(255,34,68,.25)}
+#cpbtn{order:2;border-color:var(--ac);color:var(--ac);background:rgba(var(--acr),.12);
+  box-shadow:0 0 14px rgba(var(--acr),.25)}
+#err{font-size:11px;color:#FF6688;text-align:center;margin-top:6px;min-height:14px;font-family:'Share Tech Mono',monospace}
+
+/* SETTINGS */
+.stg-toggle{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:.7rem;
+  cursor:pointer;font-size:10px;font-family:'Share Tech Mono',monospace;letter-spacing:.12em;
+  color:var(--text3);text-transform:uppercase;transition:color .2s}
+.stg-toggle:hover{color:var(--text2)}
+.stg{display:none;margin-top:.5rem;padding:14px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.07);background:var(--glass)}
+.stg.show{display:block}
+.s-lbl{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);margin-bottom:6px;font-family:'Share Tech Mono',monospace}
+.s-row{display:flex;gap:8px;margin-bottom:8px}
+.s-inp{flex:1;padding:9px 12px;border-radius:8px;font-size:12px;background:rgba(0,0,0,.4);
+  border:1px solid rgba(255,255,255,.1);color:var(--text);font-family:'Share Tech Mono',monospace;outline:0}
+.s-inp:focus{border-color:rgba(255,255,255,.3)}
+.s-btn{padding:9px 14px;border-radius:8px;font-size:12px;font-weight:600;
+  border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);
+  color:var(--text2);cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.s-note{font-size:10px;color:var(--text3);margin-top:4px;font-family:'Share Tech Mono',monospace;line-height:1.6}
+.s-note a{text-decoration:none;color:var(--ac)}
+.install{margin-top:.7rem;padding:10px 12px;border-radius:10px;
+  border:1px dashed rgba(255,255,255,.08);font-size:10px;color:var(--text3);
+  line-height:1.7;text-align:center;font-family:'Share Tech Mono',monospace}
+
+/* POPUP */
+#popup{display:none;position:fixed;inset:0;z-index:100;background:rgba(5,10,24,.95);
+  backdrop-filter:blur(12px);align-items:center;justify-content:center;flex-direction:column;padding:1.5rem}
+#popup.show{display:flex}
+#popup h2{font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--text2);margin-bottom:1.25rem;text-align:center}
+.ptabs{display:flex;gap:6px;margin-bottom:1rem;width:100%;max-width:360px}
+.ptab{flex:1;padding:7px 4px;border-radius:8px;font-size:11px;font-weight:700;
+  border:1px solid rgba(255,255,255,.1);background:var(--glass);cursor:pointer;
+  font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text3);text-align:center;transition:all .15s}
+#pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%;max-width:360px}
+.pmb{padding:10px 4px 8px;border-radius:10px;cursor:pointer;text-align:center;
+  border:1px solid rgba(255,255,255,.07);background:var(--glass);transition:all .15s;
+  min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.pmb:active{transform:scale(.93)}
+.pmb .pn{font-size:10px;font-weight:600;color:var(--text2)}
+#popup-cancel{margin-top:1rem;padding:10px 28px;border-radius:8px;
+  border:1px solid rgba(255,255,255,.1);background:0;
+  color:var(--text3);cursor:pointer;font-family:'Rajdhani',sans-serif;
+  font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+</style>
+</head>
+<body>
+<div id="glow"></div>
+<div id="app">
+  <div class="hdr"><h1>VOICE_2026</h1><p>select · speak · process</p></div>
+  <div class="tabs" id="tabs"></div>
+  <div id="panels"></div>
+  <div id="status">// выбери режим и нажми</div>
+  <div class="mic-area"><div id="mic"><canvas id="mic-canvas"></canvas><span id="mic-lbl">◈ нажми и говори</span></div></div>
+  <div class="card"><div class="card-lbl">// voice input</div><textarea id="raw" placeholder="Здесь появится твоя речь..." rows="3"></textarea></div>
+  <div class="proc" id="proc"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span class="plbl" id="plbl">обрабатываю...</span></div>
+  <div class="card"><div class="card-lbl">// результат</div><textarea id="result" placeholder="Результат появится здесь..." rows="4"></textarea></div>
+  <div class="acts">
+    <button class="btn" id="cbtn" onclick="clearAll()" disabled>Очистить</button>
+    <button class="btn" id="cpbtn" onclick="copyResult()" disabled>Скопировать</button>
+  </div>
+  <div id="err"></div>
+  <div class="stg-toggle" onclick="document.getElementById('stg').classList.toggle('show')">⚙ НАСТРОЙКИ</div>
+  <div class="stg" id="stg">
+    <div class="s-lbl">// api key</div>
+    <div class="s-row"><input type="password" class="s-inp" id="ikey" placeholder="gsk_... / sk-... / любой ключ" autocomplete="off" spellcheck="false"><button class="s-btn" id="bkey">SAVE</button></div>
+    <div class="s-lbl" style="margin-top:8px">// api endpoint</div>
+    <div class="s-row"><input class="s-inp" id="iurl" placeholder="https://api.groq.com/openai/v1/chat/completions" autocomplete="off" spellcheck="false"></div>
+    <div class="s-lbl">// model</div>
+    <div class="s-row"><input class="s-inp" id="imodel" placeholder="llama-3.3-70b-versatile" autocomplete="off" spellcheck="false"></div>
+    <div class="s-note">Хранится только на устройстве · <a href="https://console.groq.com" target="_blank">Groq</a> · <a href="https://platform.openai.com" target="_blank">OpenAI</a> · <a href="https://openrouter.ai" target="_blank">OpenRouter</a></div>
+  </div>
+  <div class="install">◈ iOS: Safari → Поделиться → «На экран Домой»<br>◈ Android: Chrome → ⋮ → «Добавить на главный экран»</div>
+</div>
+<div id="popup">
+  <h2>// выбери режим обработки</h2>
+  <div class="ptabs" id="ptabs"></div>
+  <div id="pgrid"></div>
+  <button id="popup-cancel" onclick="closePopup()">Отмена</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// CONFIG & DATA
+// ═══════════════════════════════════════════
+
+const COLORS={text:{m:'#00F0FF',r:'0,240,255'},ideas:{m:'#00FF88',r:'0,255,136'},prompt:{m:'#BF00FF',r:'191,0,255'},personal:{m:'#FF006E',r:'255,0,110'}};
+const TAB_NAMES={text:'ТЕКСТ',ideas:'ИДЕИ',prompt:'ПРОМПТ',personal:'ЛИЧНОЕ'};
+const TAB_ORDER=['text','ideas','prompt','personal'];
+
+// Icons as minimal SVG path strings (viewBox 0 0 24 24, stroke only)
+const I={
+  business:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20M8 4v6M16 4v6"/>',
+  friend:'<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>',
+  story:'<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><path d="M8 7h8M8 11h5"/>',
+  note:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>',
+  speech:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>',
+  congrats:'<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>',
+  review:'<path d="M11.48 3.5a.56.56 0 011.04 0l2.13 5.11a.56.56 0 00.47.35l5.52.44c.5.04.7.66.32.99l-4.2 3.6a.56.56 0 00-.18.56l1.28 5.38a.56.56 0 01-.84.61l-4.72-2.88a.56.56 0 00-.59 0l-4.72 2.88a.56.56 0 01-.84-.61l1.28-5.39a.56.56 0 00-.18-.56l-4.2-3.6a.56.56 0 01.32-.99l5.52-.44a.56.56 0 00.47-.35L11.48 3.5z"/>',
+  advert:'<path d="M3 11l19-9-9 19-2-8-8-2z"/>',
+  post:'<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>',
+  diary:'<path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>',
+  improve:'<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+  clean:'<path d="M4 7h16M4 12h10M4 17h7"/><path d="M17 14l2 2 4-4"/>',
+  bizideas:'<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>',
+  naming:'<path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r=".5"/>',
+  slogan:'<path d="M21 2H3v16h5l3 3 3-3h7V2z"/><path d="M8 8h8M8 12h5"/>',
+  selling:'<path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>',
+  contentplan:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  videoideas:'<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>',
+  headlines:'<path d="M4 6h16M4 12h16M4 18h7"/><path d="M19 15l2 2-2 2"/>',
+  comment:'<path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>',
+  brainstorm:'<path d="M9.66 17h4.67M12 3v1m6.36 1.64l-.7.7M21 12h-1M4 12H3m3.34-5.66l-.7-.7m2.82 9.9a5 5 0 117.07 0l-.55.55A3.37 3.37 0 0014 18.47V19a2 2 0 11-4 0v-.53c0-.9-.36-1.75-.99-2.39l-.55-.55z"/>',
+  interview:'<circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>',
+  scenario:'<path d="M15 10l4.55-2.07A1 1 0 0121 8.87v6.26a1 1 0 01-1.45.9L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>',
+  concept:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>',
+  pllm:'<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4M7 8l3 3-3 3M13 14h4"/>',
+  psales:'<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>',
+  pmarketing:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  pseo:'<circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M8 11h6M11 8v6"/>',
+  pimage:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
+  pvideo:'<path d="M15 10l4.55-2.07A1 1 0 0121 8.87v6.26a1 1 0 01-1.45.9L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>',
+  pmusic:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  pnews:'<path d="M4 22h16a2 2 0 002-2V4a2 2 0 00-2-2H8a2 2 0 00-2 2v16a4 4 0 01-4-4V6"/><path d="M10 7h8M10 11h8M10 15h5"/>',
+  presearch:'<circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>',
+  plearn:'<path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>',
+  phelp:'<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/>',
+  pplan:'<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r=".5"/><circle cx="3" cy="12" r=".5"/><circle cx="3" cy="18" r=".5"/>',
+  mysong:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  cover:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+  songtranslate:'<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/>',
+  arrange:'<path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 4v16"/>',
+  workout:'<path d="M6 5v14M18 5v14M2 9h4M20 9h2M2 15h4M20 15h2M6 12h12"/>',
+  nutrition:'<path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>',
+  motivation:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  health:'<path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/>',
+  selfesteem:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>',
+  decision:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>',
+  soultalk:'<path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>',
+  goal:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>'
+};
+
+// Panel structure: [tab, sections[]]  section={label, modes[{id,name,sub}]}
+const PANELS={
+  text:[
+    {modes:[
+      {id:'business',n:'Деловое',s:'письмо'},{id:'friend',n:'Другу',s:'сообщение'},{id:'story',n:'Рассказ',s:'история'},{id:'note',n:'Заметка',s:'структура'},
+      {id:'speech',n:'Выступление',s:'речь'},{id:'congrats',n:'Поздравление',s:'тепло'},{id:'review',n:'Отзыв',s:'рецензия'},{id:'advert',n:'Объявление',s:'анонс'},
+      {id:'post',n:'Пост',s:'соцсети'},{id:'diary',n:'Дневник',s:'личное'},{id:'improve',n:'Улучшить',s:'редактура'},{id:'clean',n:'Текст',s:'причесать'}
+    ]}
+  ],
+  ideas:[
+    {label:'// бизнес',modes:[
+      {id:'bizideas',n:'Идеи',s:'бизнес'},{id:'naming',n:'Название',s:'нейминг'},{id:'slogan',n:'Слоган',s:'девиз'},{id:'selling',n:'Продающее',s:'описание'}
+    ]},
+    {label:'// контент',modes:[
+      {id:'contentplan',n:'Контент-план',s:'2 недели'},{id:'videoideas',n:'Видео',s:'идеи'},{id:'headlines',n:'Заголовки',s:'цепляющие'},{id:'comment',n:'Комментарий',s:'умный'}
+    ]},
+    {label:'// творчество',modes:[
+      {id:'brainstorm',n:'Мозгоштурм',s:'10+ идей'},{id:'interview',n:'Интервью',s:'вопросы'},{id:'scenario',n:'Сценарий',s:'скрипт'},{id:'concept',n:'Концепция',s:'проект'}
+    ]}
+  ],
+  prompt:[
+    {label:'// текст и продажи',modes:[
+      {id:'pllm',n:'LLM',s:'для модели'},{id:'psales',n:'Продажи',s:'скрипт'},{id:'pmarketing',n:'Маркетинг',s:'стратегия'},{id:'pseo',n:'SEO',s:'оптимизация'}
+    ]},
+    {label:'// медиа',modes:[
+      {id:'pimage',n:'Изображение',s:'Midjourney'},{id:'pvideo',n:'Видео',s:'Sora/Runway'},{id:'pmusic',n:'Музыка',s:'Suno/Udio'},{id:'pnews',n:'Новости',s:'парсинг'}
+    ]},
+    {label:'// работа',modes:[
+      {id:'presearch',n:'Исследование',s:'анализ'},{id:'plearn',n:'Обучение',s:'курс'},{id:'phelp',n:'Помощь',s:'авто-промпт'},{id:'pplan',n:'Планирование',s:'план'}
+    ]}
+  ],
+  personal:[
+    {label:'// музыка',modes:[
+      {id:'mysong',n:'Своя песня',s:'по идее'},{id:'cover',n:'Кавер',s:'версия'},{id:'songtranslate',n:'Перевод',s:'песни'},{id:'arrange',n:'Аранжировка',s:'Suno 5.5'}
+    ]},
+    {label:'// спорт и здоровье',modes:[
+      {id:'workout',n:'Тренировки',s:'план'},{id:'nutrition',n:'Питание',s:'рецепты'},{id:'motivation',n:'Мотивация',s:'заряд'},{id:'health',n:'Здоровье',s:'советы'}
+    ]},
+    {label:'// психология',modes:[
+      {id:'selfesteem',n:'Самооценка',s:'поддержка'},{id:'decision',n:'Решение',s:'за/против'},{id:'soultalk',n:'По душам',s:'разговор'},{id:'goal',n:'Цель',s:'SMART'}
+    ]}
+  ]
+};
+
+// ═══════════════════════════════════════════
+// PROMPTS — compressed: common preamble extracted
+// ═══════════════════════════════════════════
+
+const TX='Переведи голосовой текст в письменный. Убери слова-паразиты (ну, вот, типа, это самое, как бы, значит). Расставь знаки препинания. Исправь ошибки распознавания речи. Сохрани все факты и смыслы.\nПомести результат в блок: [ТРАНСКРИБАЦИЯ]: ...';
+
+function mkPrompt(role, task) {
+  return t => `${role}. Выполни ДВА шага строго по порядку.\n\nШАГ 1 — ТРАНСКРИБАЦИЯ:\n${TX}\n\nШАГ 2 — ЗАДАЧА:\n${task}\nПомести результат в блок: [РЕЗУЛЬТАТ]: ...\n\nТЕКСТ: ${t}`;
+}
+function mkPromptDate(role, task) {
+  return t => {
+    const d = new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
+    return `${role}. Выполни ДВА шага строго по порядку.\n\nШАГ 1 — ТРАНСКРИБАЦИЯ:\n${TX}\n\nШАГ 2 — ЗАДАЧА:\nТекущая дата: ${d}. ${task}\nПомести результат в блок: [РЕЗУЛЬТАТ]: ...\n\nТЕКСТ: ${t}`;
+  };
+}
+
+const MODES={
+  // TEXT
+  business: mkPrompt('Ты профессиональный бизнес-редактор','Преобразуй в деловое письмо. Структура: Обращение → Цель письма → Основная часть → Действие/запрос → Подпись. Официальный вежливый тон. Никакой воды. Не добавляй факты которых нет.'),
+  friend: mkPrompt('Ты помогаешь написать сообщение другу','Сохрани разговорный живой стиль. Добавь 3-5 эмодзи точно по контексту. Объём меняй максимум на 5%. Не переписывай — только причёсывай.'),
+  story: mkPrompt('Ты литературный редактор','Определи стиль: технический → сухой точный язык; художественный → образность; личный → тёплый голос автора. Раздели на абзацы. Не увеличивай объём больше чем на 10%. Если 5+ абзацев — добавь оглавление.'),
+  note: mkPrompt('Ты редактор заметок','Структурируй в чёткие пункты. Формат: Заголовок (если понятен) + пункты с •. Убери воду. Сохрани все факты.'),
+  speech: mkPrompt('Ты спичрайтер','Структура: Зацепка → 2-3 блока → Финал+призыв. Короткие предложения. Расставь [пауза]. Ключевые слова КАПСЛОКОМ. Макс 5 минут чтения вслух.'),
+  congrats: mkPrompt('Ты пишешь тёплые поздравления','Тёплое искреннее поздравление. Персонализируй под адресата если указан. Без шаблонных фраз. С эмоцией и конкретностью.'),
+  review: mkPrompt('Ты пишешь честные отзывы','Структура: Что понравилось → Что улучшить → Итог. Честно, конкретно, без лести. Только факты из текста.'),
+  advert: mkPrompt('Ты пишешь чёткие объявления','Чётко: что/кто/где/когда/сколько (только из текста). Призыв к действию в конце. Без лишних слов.'),
+  post: mkPrompt('Ты SMM-специалист','Структура: Хуклайн (зацепка 1-2 строки) → Текст → Вывод/призыв → 3-5 хэштегов. Живой стиль. 5-8 эмодзи. 150-250 слов.'),
+  diary: mkPrompt('Ты редактор личного дневника','Только знаки препинания и абзацы по настроению. Сохрани всё: эмоции, личные слова, стиль. Не украшай. Это личное.'),
+  improve: mkPrompt('Ты редактор-корректор','Убери повторы и воду. Сделай предложения чище. Сохрани стиль и смысл. Объём −не более 15%. Ничего не добавляй.'),
+  clean: mkPrompt('Ты транскрибатор и корректор','Раздели на абзацы по смыслу. Больше ничего не меняй — смысл и объём сохрани полностью.'),
+  // IDEAS
+  bizideas: mkPrompt('Ты бизнес-стратег','5 конкретных идей по теме. Для каждой: Идея → Аудитория → Монетизация → Быстрый старт. Конкретно, без воды.'),
+  naming: mkPrompt('Ты нейминг-эксперт','7 вариантов. Для каждого: Название → Логика (1 строка). Короткое, запоминаемое. Разные стили: серьёзное, дерзкое, игривое.'),
+  slogan: mkPrompt('Ты копирайтер','5 слоганов. Для каждого: Слоган → Стиль. До 7 слов, цепляющий, отражает суть.'),
+  selling: mkPrompt('Ты копирайтер продающих текстов','Структура: Боль клиента → Решение → Выгоды (3-5 пунктов) → Призыв к действию. Конкретно, живым языком.'),
+  contentplan: mkPrompt('Ты контент-стратег','План на 2 недели. Формат: День → Формат (пост/сторис/видео) → Тема → Идея. 14 строк. Темы по нише из текста.'),
+  videoideas: mkPrompt('Ты видео-стратег','7 идей. Для каждой: Название → Формат (рилс/youtube/сторис) → Хук (первые 3 сек) → Аудитория.'),
+  headlines: mkPrompt('Ты заголовочный копирайтер','10 заголовков: 2 вопроса + 2 с цифрами + 2 провокации + 2 с пользой + 2 истории. Каждый хочется кликнуть.'),
+  comment: mkPrompt('Ты эксперт по умным комментариям','Умный живой комментарий. Добавляет ценность, вызывает диалог. Не лесть. Своя позиция + интересная мысль. 2-4 предложения.'),
+  brainstorm: mkPrompt('Ты фасилитатор мозгоштурма','Минимум 10 идей без фильтра — от очевидных до безумных. Затем топ-3 с обоснованием.'),
+  interview: mkPrompt('Ты интервьюер','15 вопросов: 5 базовых + 5 глубоких (ценности/решения) + 5 неожиданных (раскрывают личность). По теме из текста.'),
+  scenario: mkPrompt('Ты сценарист','Структура: Завязка → Конфликт → Кульминация → Развязка. Диалоги живые. Укажи формат если понятен.'),
+  concept: mkPrompt('Ты концепт-дизайнер','Формат: Название → Идея (1 предложение) → Аудитория → Уникальность → Как реализовать (3 шага).'),
+  // PROMPT
+  pllm: mkPrompt('Ты эксперт по промпт-инжинирингу','Создай детальный промпт для LLM. Структура: РОЛЬ → КОНТЕКСТ → ЗАДАЧА → ТРЕБОВАНИЯ → ФОРМАТ ОТВЕТА → ОГРАНИЧЕНИЯ. Настолько детально, чтобы даже слабая модель дала отличный результат.'),
+  psales: mkPrompt('Ты эксперт по продающим промптам','Создай промпт для продающего текста/скрипта. Включи: аудиторию, боли, возражения, УТП, структуру (AIDA или PAS), CTA.'),
+  pmarketing: mkPrompt('Ты маркетинговый стратег','Промпт для маркетинговой стратегии/кампании. Включи: цели, аудиторию, каналы, бюджет, KPI.'),
+  pseo: mkPrompt('Ты SEO-специалист','Промпт для SEO-текста. Включи: ключевые слова, структуру H1/H2/H3, мета-описание, плотность КС, LSI-слова, длину.'),
+  pimage: mkPrompt('Ты эксперт по промптам для изображений','Промпт для Midjourney/Stable Diffusion на английском. Формат: [Subject], [Style], [Lighting], [Camera], [Mood], [Colors], --ar [ratio] --style raw. Negative prompt.'),
+  pvideo: mkPrompt('Ты эксперт по видео-промптам','Промпт для Sora/Runway на английском. Включи: сцена, движение камеры, стиль, длительность, освещение, настроение.'),
+  pmusic: mkPrompt('Ты эксперт по музыкальным промптам','Промпт для Suno/Udio на английском. Формат: [genre tags] [tempo: BPM] [instruments] [mood] [vocals] [era] [structure] [production style]'),
+  pnews: mkPromptDate('Ты эксперт по новостным промптам','Промпт для парсинга актуальных новостей. Включи: тему, временной диапазон (24-48ч), источники, формат вывода (заголовок/источник/дата/резюме), фильтры.'),
+  presearch: mkPromptDate('Ты эксперт по исследованиям','Промпт для глубокого исследования. Структура: роль аналитика → тема → гипотеза → источники → методология → формат отчёта.'),
+  plearn: mkPrompt('Ты образовательный дизайнер','Промпт для обучающего материала. Включи: роль учителя, уровень аудитории, тему, структуру (теория/примеры/практика), формат, проверочные вопросы.'),
+  phelp: mkPrompt('Ты мета-промпт инженер','Определи тип задачи. Создай оптимальный промпт автоматически. Роль + контекст + задача + формат + ограничения. Максимально детально.'),
+  pplan: mkPrompt('Ты эксперт по планированию','Промпт для детального плана. Включи: цель → этапы → ресурсы → дедлайны → метрики успеха → риски.'),
+  // PERSONAL
+  mysong: mkPrompt('Ты профессиональный автор песен','Напиши полный текст по идее. Структура: Куплет 1 → Припев → Куплет 2 → Припев → Бридж → Припев. Рифмы естественные. Если указан жанр — подстройся.'),
+  cover: mkPrompt('Ты автор каверов','Сохрани ритм и структуру оригинала, замени смысл на новый из текста. Рифмовка в том же стиле.'),
+  songtranslate: mkPrompt('Ты переводчик песен','Переведи на русский. Сохрани ритм (слоги на мелодию), рифмы, смысл. Не дословно — музыкально.'),
+  arrange: mkPrompt('Ты эксперт по промптам для Suno AI','Промпт для Suno 5.5 на английском. Формат: Style tags → Tempo BPM → Key → Instruments → Vocals → Production → Structure (с длительностью) → Exclude.'),
+  workout: mkPrompt('Ты персональный тренер','Учти уровень, цель, время/оборудование. Конкретный план: упражнение → подходы×повторения → отдых → советы по технике.'),
+  nutrition: mkPrompt('Ты нутрициолог','Учти цель и ограничения. Конкретный план или рецепты с граммами и временем приёма пищи.'),
+  motivation: mkPrompt('Ты личный коуч и лучший друг','Приободри искренне. Дай конкретный практический совет. Заверши мощной мотивирующей фразой. Тёплый живой тон, без пафоса.'),
+  health: mkPrompt('Ты консультант по здоровому образу жизни','Общие рекомендации по образу жизни (сон, стресс, питание, активность). ⚠️ СТРОГО: никаких названий лекарств. По любым симптомам ВСЕГДА рекомендуй обратиться к врачу.'),
+  selfesteem: mkPrompt('Ты добрый поддерживающий друг','Приободри искренне. Найди реальные сильные стороны. Дай один конкретный маленький шаг для уверенности сегодня. Тёплый настоящий тон.'),
+  decision: mkPrompt('Ты мудрый советник','Структура: ЗА → ПРОТИВ → Ценности человека → Последствия каждого варианта. Не решай за человека. Задай один вопрос для определения.'),
+  soultalk: mkPrompt('Ты близкий друг','Выслушай, поддержи, прими без осуждения. Не давай советов если не просят. Задай один тёплый вопрос. Тон: искренний, тёплый.'),
+  goal: mkPrompt('Ты коуч по целям','Сформулируй по SMART. Разбей на 3-5 конкретных шагов. Вдохнови. Задай вопрос: что мешает начать прямо сейчас?')
+};
+
+const PROC_LABELS={
+  business:'оформляю письмо',friend:'пишу другу',story:'структурирую рассказ',note:'делаю заметку',speech:'готовлю выступление',congrats:'пишу поздравление',review:'пишу отзыв',advert:'пишу объявление',post:'создаю пост',diary:'оформляю дневник',improve:'улучшаю текст',clean:'причёсываю',
+  bizideas:'генерирую идеи',naming:'придумываю названия',slogan:'создаю слоганы',selling:'пишу описание',contentplan:'делаю контент-план',videoideas:'генерирую видеоидеи',headlines:'придумываю заголовки',comment:'пишу комментарий',brainstorm:'штурмую идеи',interview:'готовлю вопросы',scenario:'пишу сценарий',concept:'разрабатываю концепцию',
+  pllm:'создаю LLM промпт',psales:'промпт продаж',pmarketing:'маркетинг-промпт',pseo:'SEO промпт',pimage:'промпт для картинки',pvideo:'видео-промпт',pmusic:'музыкальный промпт',pnews:'промпт новостей',presearch:'исследовательский промпт',plearn:'обучающий промпт',phelp:'создаю промпт',pplan:'промпт плана',
+  mysong:'пишу песню',cover:'пишу кавер',songtranslate:'перевожу песню',arrange:'промпт Suno',workout:'план тренировок',nutrition:'план питания',motivation:'заряжаю мотивацией',health:'советы по здоровью',selfesteem:'поддерживаю',decision:'помогаю с решением',soultalk:'слушаю',goal:'прорабатываю цель'
+};
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+
+let curTab=localStorage.getItem('vd_tab')||'text';
+let curMode=null, isRec=false, recog=null, finalTx='', stream=null, pendingTx=null;
+
+// Settings
+const CFG={
+  key: localStorage.getItem('vd_key')||'',
+  url: localStorage.getItem('vd_url')||'https://api.groq.com/openai/v1/chat/completions',
+  model: localStorage.getItem('vd_model')||'llama-3.3-70b-versatile'
+};
+
+// ═══════════════════════════════════════════
+// BUILD UI (from data, not hardcoded HTML)
+// ═══════════════════════════════════════════
+
+function svg(id){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">${I[id]||'<circle cx="12" cy="12" r="10"/>'}</svg>`}
+
+// Tabs
+document.getElementById('tabs').innerHTML=TAB_ORDER.map(t=>`<button class="tab" data-tab="${t}">${TAB_NAMES[t]}</button>`).join('');
+
+// Panels
+document.getElementById('panels').innerHTML=TAB_ORDER.map(t=>{
+  const secs=PANELS[t].map(sec=>{
+    const lbl=sec.label?`<div class="sec-lbl">${sec.label}</div>`:'';
+    const btns=sec.modes.map(m=>`<div class="mb" data-mode="${m.id}" data-tab="${t}">${svg(m.id)}<span class="n">${m.n}</span><span class="s">${m.s}</span></div>`).join('');
+    return lbl+`<div class="grid">${btns}</div>`;
+  }).join('');
+  return `<div class="panel" id="p-${t}">${secs}</div>`;
+}).join('');
+
+// ═══════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════
+
+const $=id=>document.getElementById(id);
+$('ikey').value=CFG.key;
+$('iurl').value=CFG.url;
+$('imodel').value=CFG.model;
+
+$('bkey').onclick=()=>{
+  CFG.key=$('ikey').value.trim();
+  CFG.url=$('iurl').value.trim()||'https://api.groq.com/openai/v1/chat/completions';
+  CFG.model=$('imodel').value.trim()||'llama-3.3-70b-versatile';
+  localStorage.setItem('vd_key',CFG.key);
+  localStorage.setItem('vd_url',CFG.url);
+  localStorage.setItem('vd_model',CFG.model);
+  const b=$('bkey');b.textContent='✓ OK';setTimeout(()=>b.textContent='SAVE',1500);
+};
+
+// ═══════════════════════════════════════════
+// WAVE ANIMATION — only runs rAF when needed
+// ═══════════════════════════════════════════
+
+let wRaf=null,wAn=null,wCtx_=null;
+const cvs=$('mic-canvas'),ctx=cvs.getContext('2d');
+
+function startAudio(ms){
+  try{wCtx_=new(window.AudioContext||window.webkitAudioContext)();wAn=wCtx_.createAnalyser();wAn.fftSize=64;wCtx_.createMediaStreamSource(ms).connect(wAn)}catch(e){wAn=null}
+}
+function stopAudio(){if(wCtx_){try{wCtx_.close()}catch(e){}wCtx_=null}wAn=null}
+
+function drawWave(){
+  if(wRaf)cancelAnimationFrame(wRaf);
+  const col=COLORS[curTab].m;
+  const W=cvs.offsetWidth||200,H=cvs.offsetHeight||70;
+  const dpr=window.devicePixelRatio||1;
+  if(cvs.width!==W*dpr||cvs.height!==H*dpr){cvs.width=W*dpr;cvs.height=H*dpr}
+
+  function frame(){
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,W,H);
+    const t=Date.now()*.003,BAR=16,bw=5;
+    const gap=(W-BAR*bw)/(BAR+1);
+
+    if(wAn){
+      const fd=new Uint8Array(wAn.frequencyBinCount);
+      wAn.getByteFrequencyData(fd);
+      for(let i=0;i<BAR;i++){
+        const v=(fd[i]||0)/255,bh=Math.max(5,v*H*.6),x=gap+i*(bw+gap);
+        const g=ctx.createLinearGradient(0,H/2-bh,0,H/2+bh);
+        g.addColorStop(0,col+'22');g.addColorStop(.5,col);g.addColorStop(1,col+'22');
+        ctx.fillStyle=g;ctx.beginPath();
+        ctx.roundRect?ctx.roundRect(x,H/2-bh,bw,bh*2,2):ctx.rect(x,H/2-bh,bw,bh*2);
+        ctx.fill();
+      }
+    }else{
+      for(let i=0;i<BAR;i++){
+        const bh=4+Math.sin(t*1.2+i*.5)*3,x=gap+i*(bw+gap);
+        ctx.fillStyle=col+'35';ctx.beginPath();
+        ctx.roundRect?ctx.roundRect(x,H/2-bh,bw,bh*2,2):ctx.rect(x,H/2-bh,bw,bh*2);
+        ctx.fill();
+      }
+    }
+    // ripple
+    ctx.beginPath();ctx.strokeStyle=col+(wAn?'70':'30');ctx.lineWidth=1.5;
+    for(let x=0;x<=W;x+=2){
+      const y=H*.2+Math.sin(x*.05+t)*4+Math.sin(x*.1+t*1.5)*2;
+      x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    wRaf=isRec?requestAnimationFrame(frame):null;
+  }
+  frame();
+}
+
+// Draw idle once, no continuous rAF
+function drawIdle(){if(wRaf){cancelAnimationFrame(wRaf);wRaf=null}drawWave()}
+
+// ═══════════════════════════════════════════
+// SWITCH TAB
+// ═══════════════════════════════════════════
+
+function switchTab(tab){
+  curTab=tab;localStorage.setItem('vd_tab',tab);
+  const c=COLORS[tab];
+  document.documentElement.style.setProperty('--ac',c.m);
+  document.documentElement.style.setProperty('--acr',c.r);
+
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  const p=$('p-'+tab);if(p)p.classList.add('on');
+  document.querySelectorAll('.tab').forEach(t=>{t.classList.toggle('on',t.dataset.tab===tab)});
+
+  // mic button color updates via CSS vars automatically
+  drawIdle();
+}
+
+// ═══════════════════════════════════════════
+// RECORDING
+// ═══════════════════════════════════════════
+
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+
+document.addEventListener('click',e=>{
+  const mb=e.target.closest('.mb');
+  if(!mb)return;
+  if(isRec){stopRec(false);return}
+  document.querySelectorAll('.mb').forEach(b=>b.classList.remove('on'));
+  mb.classList.add('on');
+  curMode=mb.dataset.mode;
+  $('err').textContent='';
+  if(!SR){$('err').textContent='Используй Chrome или Safari';return}
+  navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{stream=s;startRec(false)})
+    .catch(()=>$('err').textContent='Нет доступа к микрофону');
+});
+
+$('mic').addEventListener('click',()=>{
+  if(isRec){stopRec(true);return}
+  $('err').textContent='';
+  if(!SR){$('err').textContent='Используй Chrome или Safari';return}
+  navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{stream=s;startRec(true)})
+    .catch(()=>$('err').textContent='Нет доступа к микрофону');
+});
+
+function startRec(askAfter){
+  finalTx='';$('raw').value='';$('result').value='';
+  $('cbtn').disabled=true;$('cpbtn').disabled=true;
+  isRec=true;
+  $('status').textContent='// слушаю... нажми снова чтобы остановить';
+  $('mic').classList.add('rec');$('mic-lbl').textContent='⏹ стоп';
+  startAudio(stream);drawWave();
+
+  recog=new SR();recog.lang='ru-RU';recog.interimResults=true;recog.continuous=true;
+  recog._ask=askAfter;
+
+  recog.onresult=e=>{
+    let iv='';finalTx='';
+    for(let i=0;i<e.results.length;i++){
+      if(e.results[i].isFinal)finalTx+=e.results[i][0].transcript+' ';
+      else iv+=e.results[i][0].transcript;
+    }
+    $('raw').value=finalTx+iv;
+  };
+  recog.onerror=e=>{if(e.error!=='aborted')$('err').textContent='Ошибка: '+e.error;stopRec(false)};
+  recog.onend=()=>{if(isRec)stopRec(recog?recog._ask:false)};
+  try{recog.start()}catch(e){$('err').textContent='Не удалось запустить';stopRec(false)}
+}
+
+function stopRec(askAfter){
+  isRec=false;$('mic').classList.remove('rec');
+  $('mic-lbl').textContent='◈ нажми и говори';
+  document.querySelectorAll('.mb').forEach(b=>b.classList.remove('on'));
+  if(recog){try{recog.stop()}catch(e){}recog=null}
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+  stopAudio();drawIdle();
+
+  const text=(finalTx||$('raw').value||'').trim();
+  if(!text||text.length<3){$('status').textContent='// выбери режим и нажми';return}
+  if(askAfter&&!curMode){pendingTx=text;showPopup()}
+  else if(curMode)processText(text);
+  else{pendingTx=text;showPopup()}
+}
+
+// ═══════════════════════════════════════════
+// POPUP
+// ═══════════════════════════════════════════
+
+let popTab='text';
+
+$('ptabs').innerHTML=TAB_ORDER.map(t=>`<button class="ptab" data-tab="${t}">${TAB_NAMES[t]}</button>`).join('');
+
+function showPopup(){popTab=curTab;$('popup').classList.add('show');renderPopup()}
+function closePopup(){$('popup').classList.remove('show');pendingTx=null;$('status').textContent='// выбери режим и нажми'}
+
+$('ptabs').addEventListener('click',e=>{
+  const t=e.target.dataset?.tab;if(!t)return;popTab=t;renderPopup();
+});
+
+function renderPopup(){
+  const c=COLORS[popTab];
+  document.querySelectorAll('.ptab').forEach(t=>{
+    const active=t.dataset.tab===popTab;
+    t.style.borderColor=active?c.m:'rgba(255,255,255,.1)';
+    t.style.color=active?c.m:'';
+    t.style.background=active?c.m+'1a':'';
+  });
+  const all=PANELS[popTab].flatMap(s=>s.modes);
+  $('pgrid').innerHTML=all.map(m=>
+    `<div class="pmb" data-mode="${m.id}" data-tab="${popTab}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="${c.m}" stroke-width="1.5">${I[m.id]||'<circle cx="12" cy="12" r="10"/>'}</svg>
+      <span class="pn">${m.n}</span>
+    </div>`).join('');
+}
+
+$('pgrid').addEventListener('click',e=>{
+  const el=e.target.closest('.pmb');if(!el)return;
+  curMode=el.dataset.mode;
+  const tab=el.dataset.tab;
+  if(tab!==curTab)switchTab(tab);
+  $('popup').classList.remove('show');
+  if(pendingTx){processText(pendingTx);pendingTx=null}
+});
+
+// ═══════════════════════════════════════════
+// PROCESS TEXT via API
+// ═══════════════════════════════════════════
+
+async function processText(text){
+  if(!CFG.key){
+    $('err').textContent='Введи API ключ в ⚙ НАСТРОЙКИ';
+    $('result').value=text;$('cpbtn').disabled=false;$('cbtn').disabled=false;
+    $('status').textContent='// нужен API ключ';return;
+  }
+  const lbl=PROC_LABELS[curMode]||'обрабатываю';
+  $('status').textContent='// '+lbl+'...';
+  $('plbl').textContent=lbl+'...';
+  $('proc').style.display='flex';$('result').value='';
+
+  try{
+    const res=await fetch(CFG.url,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+CFG.key},
+      body:JSON.stringify({model:CFG.model,max_tokens:2000,temperature:.3,
+        messages:[{role:'user',content:MODES[curMode](text)}]})
+    });
+    const d=await res.json();
+    if(d.error)throw new Error(d.error.message||JSON.stringify(d.error));
+    const raw=d.choices?.[0]?.message?.content||'';
+
+    const tm=raw.match(/\[ТРАНСКРИБАЦИЯ\]:\s*([\s\S]*?)(?=\[РЕЗУЛЬТАТ\]|$)/i);
+    const rm=raw.match(/\[РЕЗУЛЬТАТ\]:\s*([\s\S]*?)$/i);
+    if(tm)$('raw').value=tm[1].trim();
+    $('result').value=rm?rm[1].trim():raw.trim();
+    $('cpbtn').disabled=false;
+    $('status').textContent='// готово ✦';
+  }catch(e){
+    $('result').value=text;
+    $('err').textContent='Ошибка: '+e.message;
+    $('cpbtn').disabled=false;
+    $('status').textContent='// ошибка';
+  }
+  $('proc').style.display='none';$('cbtn').disabled=false;
+}
+
+// ═══════════════════════════════════════════
+// COPY & CLEAR
+// ═══════════════════════════════════════════
+
+function copyResult(){
+  const t=$('result').value;if(!t)return;
+  navigator.clipboard.writeText(t).then(()=>{
+    const b=$('cpbtn'),o=b.textContent;b.textContent='✓ СКОПИРОВАНО';
+    setTimeout(()=>b.textContent=o,1500);
+  }).catch(()=>$('result').select());
+}
+
+function clearAll(){
+  $('raw').value='';$('result').value='';
+  finalTx='';curMode=null;
+  $('cpbtn').disabled=true;$('cbtn').disabled=true;
+  document.querySelectorAll('.mb').forEach(b=>b.classList.remove('on'));
+  $('status').textContent='// выбери режим и нажми';
+  $('err').textContent='';pendingTx=null;
+}
+
+// ═══════════════════════════════════════════
+// TAB CLICKS
+// ═══════════════════════════════════════════
+
+$('tabs').addEventListener('click',e=>{const t=e.target.dataset?.tab;if(t)switchTab(t)});
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+
+switchTab(curTab);
+
+// PWA
+const mf={name:'VOICE 2026',short_name:'VOICE',start_url:'.',display:'standalone',background_color:'#050A18',theme_color:'#050A18',
+  icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23050A18'/><rect x='42' y='18' width='16' height='28' rx='8' fill='none' stroke='%2300F0FF' stroke-width='2.5'/><path d='M26 44a24 24 0 0048 0' stroke='%2300F0FF' stroke-width='2.5' fill='none'/><line x1='50' y1='68' x2='50' y2='78' stroke='%2300F0FF' stroke-width='2.5'/><line x1='38' y1='78' x2='62' y2='78' stroke='%2300F0FF' stroke-width='2.5'/></svg>",sizes:'192x192',type:'image/svg+xml'}]};
+const ml=document.createElement('link');ml.rel='manifest';ml.href='data:application/json,'+encodeURIComponent(JSON.stringify(mf));document.head.appendChild(ml);
+if('serviceWorker'in navigator){navigator.serviceWorker.register(URL.createObjectURL(new Blob([`self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>new Response(''))))`],{type:'application/javascript'}))).catch(()=>{})}
+</script>
+</body>
+</html>
